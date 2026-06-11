@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Section, SectionHeader } from "@/components/site/Section";
+import { Section } from "@/components/site/Section";
 import { AGENTS } from "@/lib/derrly-data";
 
 export const Route = createFileRoute("/agents")({
@@ -80,10 +80,6 @@ function AgentsPage() {
         </div>
       </Section>
 
-      <SectionHeader
-        eyebrow=""
-        title={<></>}
-      />
     </>
   );
 }
