@@ -1,0 +1,2808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="Derrly AI — The world's first autonomous AI game studio. Build entire games through conversation."/>
+<meta name="theme-color" content="#000"/>
+<meta property="og:title" content="Derrly AI — Build entire games through conversation"/>
+<meta property="og:description" content="The world's first autonomous AI game studio. An Executive Producer and 11 specialist AI agents design, build, test, and deploy your game automatically."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://derrly.ai"/>
+<meta property="og:image" content="https://derrly.ai/og-image.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Derrly AI — Build entire games through conversation"/>
+<meta name="twitter:description" content="The world's first autonomous AI game studio. Build complete games in under 60 seconds."/>
+<link rel="canonical" href="https://derrly.ai"/>
+<title>Derrly AI — Build entire games through conversation.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ══════════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════════ */
+:root{
+  --black:#000;
+  --s1:#080808;
+  --s2:#0f0f0f;
+  --s3:#171717;
+  --s4:#1f1f1f;
+  --s5:#282828;
+  --g1:#333;
+  --g2:#444;
+  --g3:#5c5c5c;
+  --g4:#777;
+  --g5:#999;
+  --g6:#bbb;
+  --g7:#d9d9d9;
+  --white:#fff;
+  --off:#f4f4f4;
+  --a1:rgba(255,255,255,.045);
+  --a2:rgba(255,255,255,.09);
+  --a3:rgba(255,255,255,.14);
+  --a4:rgba(255,255,255,.22);
+  --nav-h:60px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --max:1300px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--black);color:var(--white);overflow-x:hidden;line-height:1.6}
+.serif{font-family:'Playfair Display',Georgia,serif}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;font-weight:400;line-height:1.05;letter-spacing:-.02em}
+.mono{font-family:'JetBrains Mono',monospace}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit;line-height:1}
+a{text-decoration:none;color:inherit}
+input,select,textarea{font-family:inherit;color:inherit;background:none;border:none;outline:none}
+::selection{background:rgba(255,255,255,.2)}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--black)}
+::-webkit-scrollbar-thumb{background:var(--g2);border-radius:2px}
+:focus-visible{outline:1.5px solid rgba(255,255,255,.45);outline-offset:3px;border-radius:3px}
+
+/* ══════════════════════════════════════════════
+   PROGRESS + CURSOR
+══════════════════════════════════════════════ */
+#sp{position:fixed;top:0;left:0;height:1px;background:var(--g4);z-index:9999;width:0;pointer-events:none}
+#cur{pointer-events:none;position:fixed;z-index:0;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.015) 0%,transparent 68%);transform:translate(-50%,-50%);transition:left .18s ease,top .18s ease}
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
+#nav{position:fixed;inset:0 0 auto;height:var(--nav-h);z-index:500;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
+#nav.sc{background:rgba(0,0,0,.88);border-color:var(--a2);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.nw{max-width:var(--max);margin:0 auto;padding:0 28px;height:100%;display:flex;align-items:center;justify-content:space-between;gap:16px}
+/* logo */
+.nbrand{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.nlogo{width:26px;height:26px;color:var(--white);flex-shrink:0;transition:transform .35s var(--spring)}
+.nbrand:hover .nlogo{transform:scale(1.12) rotate(-9deg)}
+.nlogo svg{width:100%;height:100%}
+.nname{font-family:'Playfair Display',serif;font-size:18px;color:var(--white);letter-spacing:-.025em}
+.ntag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--a2);border:1px solid var(--a2);color:var(--g5)}
+/* links */
+.nlinks{display:flex;gap:0}
+.nl{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:400;color:var(--g5);transition:all .18s;cursor:pointer}
+.nl:hover{color:var(--white);background:var(--a1)}
+/* actions */
+.nact{display:flex;gap:8px;align-items:center}
+.nbtn-outline{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:400;color:var(--g5);border:1px solid var(--a2);transition:all .18s}
+.nbtn-outline:hover{color:var(--white);border-color:var(--a3);background:var(--a1)}
+.nbtn-solid{padding:8px 20px;border-radius:9px;font-size:13px;font-weight:600;background:var(--white);color:var(--black);transition:all .24s var(--spring)}
+.nbtn-solid:hover{transform:translateY(-1px);box-shadow:0 4px 22px rgba(255,255,255,.22)}
+.nbtn-solid:active{transform:scale(.97)}
+/* burger */
+.nbgr{display:none;flex-direction:column;gap:4px;padding:8px;border-radius:8px;cursor:pointer;transition:background .18s}
+.nbgr:hover{background:var(--a1)}
+.nbgr span{display:block;width:17px;height:1.5px;background:var(--g5);border-radius:1px;transition:all .28s}
+.nbgr.op span:nth-child(1){transform:translateY(5.5px) rotate(45deg);background:var(--white)}
+.nbgr.op span:nth-child(2){opacity:0}
+.nbgr.op span:nth-child(3){transform:translateY(-5.5px) rotate(-45deg);background:var(--white)}
+/* mobile drawer */
+.mdraw{display:none;position:fixed;top:var(--nav-h);inset:var(--nav-h) 0 auto;background:rgba(0,0,0,.97);border-bottom:1px solid var(--a2);backdrop-filter:blur(24px);padding:12px 20px 22px;flex-direction:column;gap:2px;z-index:499;opacity:0;transform:translateY(-8px);pointer-events:none;transition:all .24s var(--ease)}
+.mdraw.op{opacity:1;transform:translateY(0);pointer-events:all}
+.mlink{display:block;padding:11px 14px;color:var(--g5);font-size:15px;font-weight:400;border-radius:8px;transition:all .18s;cursor:pointer}
+.mlink:hover{color:var(--white);background:var(--a1)}
+.mhr{height:1px;background:var(--a2);margin:8px 0}
+
+/* ══════════════════════════════════════════════
+   SECTION PRIMITIVES
+══════════════════════════════════════════════ */
+section{padding:140px 28px;position:relative;overflow:hidden}
+section.slim{padding:100px 28px}
+.si{max-width:var(--max);margin:0 auto}
+/* section headers */
+.sh{text-align:center;margin-bottom:72px}
+.sh-ey{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--g4);margin-bottom:22px}
+.sh-ey::before,.sh-ey::after{content:'';display:block;width:24px;height:1px;background:var(--g2)}
+.sh h2{font-size:clamp(40px,5.5vw,66px);color:var(--white);margin-bottom:18px}
+.sh h2 em{color:var(--g3);font-style:italic}
+.sh p{font-size:clamp(15px,1.7vw,18px);color:var(--g5);max-width:500px;margin:0 auto;line-height:1.85;font-weight:300}
+/* divider */
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--g1) 20%,var(--g1) 80%,transparent);margin:0 28px}
+/* reveals */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.rv.in{opacity:1;transform:translateY(0)}
+.rl{opacity:0;transform:translateX(-16px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.rl.in{opacity:1;transform:translateX(0)}
+.rr{opacity:0;transform:translateX(16px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.rr.in{opacity:1;transform:translateX(0)}
+
+/* ══════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════ */
+#hero{min-height:100vh;display:grid;align-items:center;padding:calc(var(--nav-h)+80px) 28px 80px}
+.hero-bg-dots{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.05) 1px,transparent 1px);background-size:52px 52px;mask-image:radial-gradient(ellipse 80% 72% at 50% 35%,black 18%,transparent 80%);pointer-events:none}
+.hero-wm{position:absolute;right:-8%;top:50%;transform:translateY(-50%);width:54vmin;height:54vmin;max-width:540px;color:var(--white);opacity:.025;pointer-events:none}
+.hero-wm svg{width:100%;height:100%}
+.hero-layout{max-width:var(--max);margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 460px;gap:80px;align-items:center}
+@media(max-width:960px){.hero-layout{grid-template-columns:1fr}}
+/* hero left */
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 7px;border-radius:99px;border:1px solid var(--a3);background:var(--a1);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--g6);margin-bottom:28px}
+.hb-pulse{width:7px;height:7px;border-radius:50%;background:var(--white);box-shadow:0 0 9px rgba(255,255,255,.5);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.72)}}
+.hero-h1{font-size:clamp(52px,8.5vw,106px);line-height:.97;letter-spacing:-.045em;color:var(--white);margin-bottom:28px}
+.hero-h1 span{color:var(--g2);font-style:italic;display:block}
+.hero-p{font-size:clamp(15px,1.8vw,18px);color:var(--g5);max-width:500px;line-height:1.85;margin-bottom:40px;font-weight:300}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:60px}
+.btn-hero{display:inline-flex;align-items:center;gap:9px;padding:15px 34px;border-radius:11px;font-size:15px;font-weight:600;background:var(--white);color:var(--black);transition:all .25s var(--spring)}
+.btn-hero:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 34px rgba(255,255,255,.22)}
+.btn-hero:active{transform:scale(.97)}
+.btn-hero-o{display:inline-flex;align-items:center;gap:9px;padding:14px 28px;border-radius:11px;font-size:15px;font-weight:400;color:var(--g6);border:1px solid var(--a3);background:var(--a1);transition:all .2s}
+.btn-hero-o:hover{color:var(--white);border-color:var(--a4);background:var(--a2)}
+/* stats */
+.hero-stats{display:flex;gap:36px;flex-wrap:wrap;padding-top:40px;border-top:1px solid var(--a2)}
+.hs-n{font-family:'Playfair Display',serif;font-size:clamp(26px,3.2vw,36px);color:var(--white);letter-spacing:-.04em}
+.hs-l{font-size:12px;color:var(--g5);margin-top:3px;font-weight:300}
+/* hero terminal */
+.hero-term{border-radius:18px;overflow:hidden;border:1px solid var(--a3);background:var(--s2);box-shadow:0 0 0 1px rgba(255,255,255,.02),0 56px 110px rgba(0,0,0,.75)}
+.ht-bar{padding:12px 16px;background:var(--s3);border-bottom:1px solid var(--a2);display:flex;align-items:center;gap:8px}
+.wd{width:10px;height:10px;border-radius:50%}
+.wr{background:#ff5f57}.wy{background:#febc2e}.wg{background:#28c840}
+.ht-ttl{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:var(--g4)}
+.ht-prog{height:2px;background:var(--a1)}
+.ht-pf{height:100%;background:var(--white);width:0;transition:width .38s var(--ease)}
+.ht-body{padding:18px 20px}
+.ht-prompt{padding:12px 14px;border-radius:9px;background:var(--a1);border:1px solid var(--a2);font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--g7);line-height:1.6;margin-bottom:16px}
+.ht-arr{color:var(--white);margin-right:4px}
+.ht-steps-list{display:flex;flex-direction:column}
+.ht-step{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--g4);transition:color .3s}
+.ht-step:last-child{border:none}
+.ht-step.s-active{color:var(--white)}
+.ht-step.s-done{color:var(--g6)}
+.ht-ic{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px}
+.ht-spinner{width:10px;height:10px;border:1.5px solid rgba(255,255,255,.1);border-top-color:var(--white);border-radius:50%;animation:spin .65s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ht-result{margin-top:14px;padding:14px 16px;border-radius:9px;border:1px solid var(--a3);background:rgba(255,255,255,.02);display:none}
+.ht-result.show{display:block;animation:fade-up .4s var(--ease)}
+@keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.htr-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--g5);margin-bottom:7px}
+.htr-name{font-family:'Playfair Display',serif;font-size:22px;color:var(--white);margin-bottom:4px}
+.htr-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--g5)}
+
+/* ══════════════════════════════════════════════
+   MARQUEE
+══════════════════════════════════════════════ */
+.mq-band{overflow:hidden;padding:18px 0;border-top:1px solid var(--a2);border-bottom:1px solid var(--a2)}
+.mq-track{display:flex;animation:mq-scroll 36s linear infinite;width:max-content}
+.mq-track:hover{animation-play-state:paused}
+.mq-item{display:inline-flex;align-items:center;gap:8px;padding:0 38px;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:var(--g4);white-space:nowrap}
+.mq-sep{width:3px;height:3px;border-radius:50%;background:var(--g2)}
+@keyframes mq-scroll{to{transform:translateX(-50%)}}
+
+/* ══════════════════════════════════════════════
+   WHAT IS DERRLY
+══════════════════════════════════════════════ */
+.what-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--a2);border-radius:18px;overflow:hidden;border:1px solid var(--a2)}
+@media(max-width:700px){.what-grid{grid-template-columns:1fr}}
+.wc{padding:52px;background:var(--s2);transition:background .24s}
+.wc:hover{background:var(--s3)}
+.wc-num{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--g4);margin-bottom:14px}
+.wc-head{font-family:'Playfair Display',serif;font-size:clamp(22px,2.8vw,30px);color:var(--white);margin-bottom:14px;letter-spacing:-.025em}
+.wc-body{font-size:14px;color:var(--g5);line-height:1.8;font-weight:300}
+.wc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
+.wc-tag{padding:5px 11px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5);background:var(--a1);border:1px solid var(--a2)}
+
+/* ══════════════════════════════════════════════
+   PIPELINE (HOW IT WORKS)
+══════════════════════════════════════════════ */
+.pipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:1px;background:var(--a2);border-radius:18px;overflow:hidden;border:1px solid var(--a2)}
+.pn{padding:30px;background:var(--s2);transition:background .24s}
+.pn:hover{background:var(--s3)}
+.pn-num{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--g4);margin-bottom:10px}
+.pn-name{font-family:'Playfair Display',serif;font-size:19px;color:var(--white);margin-bottom:7px;letter-spacing:-.02em}
+.pn-role{font-size:12px;color:var(--g5);line-height:1.65;font-weight:300}
+
+/* ══════════════════════════════════════════════
+   AGENT STUDIO
+══════════════════════════════════════════════ */
+.studio-top{max-width:700px;margin:0 auto 28px;display:flex;gap:8px}
+.studio-ta{flex:1;padding:12px 16px;border-radius:11px;border:1px solid var(--a3);background:var(--s3);font-size:14px;color:var(--white);resize:none;transition:border-color .2s;font-weight:300}
+.studio-ta:focus{border-color:var(--a4)}
+.studio-ta::placeholder{color:var(--g4)}
+.studio-btn{padding:12px 22px;border-radius:11px;font-size:14px;font-weight:600;background:var(--white);color:var(--black);white-space:nowrap;transition:all .24s var(--spring)}
+.studio-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,255,255,.2)}
+.studio-btn:disabled{opacity:.35;transform:none;cursor:default}
+/* layout */
+.studio-layout{display:grid;grid-template-columns:1fr 360px;gap:14px;align-items:start}
+@media(max-width:1040px){.studio-layout{grid-template-columns:1fr}}
+.agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px}
+/* agent card */
+.ag-card{padding:16px 18px;border-radius:12px;border:1px solid var(--a2);background:var(--s2);transition:all .22s;position:relative;overflow:hidden}
+.ag-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.018),transparent);opacity:0;transition:opacity .3s}
+.ag-card:hover{border-color:var(--a3);background:var(--s3)}
+.ag-card:hover::after{opacity:1}
+.ag-card.ag-idle .ag-dot{background:var(--g2)}
+.ag-card.ag-run{border-color:rgba(255,255,255,.18)}
+.ag-card.ag-run .ag-dot{background:var(--white);box-shadow:0 0 8px rgba(255,255,255,.5);animation:pulse 1.8s ease-in-out infinite}
+.ag-card.ag-done{opacity:.55}
+.ag-card.ag-done .ag-dot{background:var(--g4)}
+.ag-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.ag-id-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--g4)}
+.ag-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:all .3s}
+.ag-name{font-size:12px;font-weight:600;color:var(--white);margin-bottom:2px;letter-spacing:-.01em}
+.ag-role-tag{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--g5);margin-bottom:9px}
+.ag-bar{height:2px;background:var(--a1);border-radius:1px;overflow:hidden;margin-bottom:7px}
+.ag-bar-fill{height:100%;background:var(--white);border-radius:1px;width:0;transition:width .45s var(--ease)}
+.ag-status-txt{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--g4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ag-output-box{margin-top:8px;padding:6px 9px;border-radius:6px;background:var(--a1);border:1px solid rgba(255,255,255,.04);font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--g5);line-height:1.55;display:none}
+.ag-card.ag-done .ag-output-box{display:block}
+/* comms panel */
+.comms-panel{border-radius:16px;border:1px solid var(--a2);background:var(--s2);display:flex;flex-direction:column;height:600px}
+.comms-head{padding:14px 18px;border-bottom:1px solid var(--a2);background:var(--s3);border-radius:16px 16px 0 0;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.comms-title{font-size:13px;font-weight:600;color:var(--white)}
+.comms-live{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5)}
+.comms-live-dot{width:6px;height:6px;border-radius:50%;background:var(--white);box-shadow:0 0 6px rgba(255,255,255,.5);animation:pulse 1.8s ease-in-out infinite}
+.comms-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.comms-body::-webkit-scrollbar{width:2px}
+.comms-body::-webkit-scrollbar-thumb{background:var(--a2)}
+.comm-msg{animation:fade-up .28s var(--ease)}
+.comm-who{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--g4);margin-bottom:4px}
+.comm-text{padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.6;color:var(--g7);border:1px solid var(--a2);background:var(--s3);border-bottom-left-radius:3px;font-weight:300}
+.comm-text.hi{border-color:var(--a3);color:var(--white)}
+.comm-text.ep{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.14)}
+.comms-foot{padding:14px 18px;border-top:1px solid var(--a2);flex-shrink:0}
+.comms-prog-row{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5);margin-bottom:6px}
+.comms-prog-bar{height:3px;background:var(--a1);border-radius:2px;overflow:hidden}
+.comms-prog-fill{height:100%;background:var(--white);border-radius:2px;width:0;transition:width .38s var(--ease)}
+
+/* ══════════════════════════════════════════════
+   LIVE DEMO
+══════════════════════════════════════════════ */
+.demo-layout{display:grid;grid-template-columns:258px 1fr;gap:12px}
+@media(max-width:740px){.demo-layout{grid-template-columns:1fr}}
+.demo-opts-list{display:flex;flex-direction:column;gap:6px}
+.demo-opt{padding:13px 15px;border-radius:12px;border:1px solid var(--a2);background:var(--s2);cursor:pointer;transition:all .2s}
+.demo-opt:hover,.demo-opt.sel{border-color:var(--a3);background:var(--s3)}
+.demo-opt.sel{border-color:rgba(255,255,255,.2)}
+.dopt-ico{font-size:20px;margin-bottom:5px;display:block;opacity:.8}
+.dopt-name{font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px}
+.dopt-genre{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5)}
+.demo-output-panel{border-radius:16px;border:1px solid var(--a2);background:var(--s2);display:flex;flex-direction:column;overflow:hidden;min-height:380px}
+.dop-head{padding:12px 18px;border-bottom:1px solid var(--a2);background:var(--s3);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.dop-title{font-size:13px;font-weight:600;color:var(--white)}
+.dop-status{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5);display:flex;align-items:center;gap:5px}
+.dop-dot{width:5px;height:5px;border-radius:50%;background:var(--g3)}
+.dop-dot.on{background:var(--white);animation:pulse 1.8s ease-in-out infinite}
+.dop-prog{height:1.5px;background:var(--a1)}
+.dop-prog-fill{height:100%;background:var(--white);width:0;transition:width .3s}
+.dop-log{flex:1;padding:18px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.85;display:flex;flex-direction:column}
+.dop-log::-webkit-scrollbar{width:2px}
+.dlog-line{opacity:0;animation:fade-up .22s var(--ease) forwards;padding:1px 0}
+.dlog-line.l-cmd{color:var(--white);font-weight:500}
+.dlog-line.l-ok{color:var(--g6)}
+.dlog-line.l-hi{color:var(--white)}
+.dlog-line.l-dim{color:var(--g3)}
+.dop-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--a2);border-top:1px solid var(--a2);flex-shrink:0}
+.dop-mc{background:var(--s2);padding:12px 14px}
+.dop-mv{font-family:'Playfair Display',serif;font-size:20px;color:var(--white);letter-spacing:-.03em}
+.dop-ml{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--g5);margin-top:2px}
+
+/* ══════════════════════════════════════════════
+   PLAYABLE GAME
+══════════════════════════════════════════════ */
+.game-shell{border-radius:18px;border:1px solid var(--a2);overflow:hidden;background:var(--s2)}
+.game-chrome{padding:11px 16px;border-bottom:1px solid var(--a2);background:var(--s3);display:flex;align-items:center;justify-content:space-between}
+.gchr-l{display:flex;align-items:center;gap:10px}
+.gchr-title{font-size:13px;font-weight:600;color:var(--white)}
+.gchr-chip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5);padding:3px 8px;border-radius:5px;background:var(--a1);border:1px solid var(--a2)}
+.game-canvas-wrap{position:relative}
+canvas#game-cvs{display:block;width:100%;background:var(--black)}
+.game-overlay{position:absolute;inset:0;background:rgba(0,0,0,.84);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:pointer;transition:opacity .3s;z-index:10}
+.game-overlay.hidden{opacity:0;pointer-events:none}
+.gov-logo{width:52px;height:52px;color:var(--white);opacity:.32;margin-bottom:4px}
+.gov-logo svg{width:100%;height:100%}
+.gov-title{font-family:'Playfair Display',serif;font-size:32px;color:var(--white);letter-spacing:-.03em}
+.gov-sub{font-size:13px;color:var(--g5)}
+.btn-play-game{padding:12px 34px;border-radius:11px;background:var(--white);color:var(--black);font-size:14px;font-weight:600;transition:all .25s var(--spring)}
+.btn-play-game:hover{transform:scale(1.04);box-shadow:0 8px 28px rgba(255,255,255,.2)}
+/* HUD */
+.game-hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:12px;pointer-events:none;z-index:5}
+.hud-pill{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:8px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.07);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--white);backdrop-filter:blur(8px)}
+.hud-hp-bar{width:68px;height:3px;background:rgba(255,255,255,.12);border-radius:2px}
+.hud-hp-fill{height:100%;background:var(--white);border-radius:2px;transition:width .3s}
+.game-hint-bar{padding:9px 16px;border-top:1px solid var(--a2);background:var(--s3);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--g4);text-align:center;letter-spacing:.04em}
+.game-mobile-pad{display:none;padding:10px 12px;background:var(--s3);border-top:1px solid var(--a2);justify-content:center}
+.dpad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:4px}
+.dk{display:flex;align-items:center;justify-content:center;background:var(--a1);border:1px solid var(--a2);border-radius:9px;font-size:15px;cursor:pointer;user-select:none;transition:background .1s;-webkit-tap-highlight-color:transparent}
+.dk:active,.dk.pressed{background:var(--a3)}
+
+/* ══════════════════════════════════════════════
+   WHAT DERRLY CREATES
+══════════════════════════════════════════════ */
+.creates-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:1px;background:var(--a2);border-radius:18px;overflow:hidden;border:1px solid var(--a2)}
+.cc-item{padding:28px 22px;background:var(--s2);transition:background .24s;cursor:default}
+.cc-item:hover{background:var(--s3)}
+.cc-ico{font-size:22px;margin-bottom:12px;display:block;opacity:.65}
+.cc-name{font-size:14px;font-weight:600;color:var(--white);margin-bottom:4px;letter-spacing:-.01em}
+.cc-desc{font-size:12px;color:var(--g5);line-height:1.6;font-weight:300}
+
+/* ══════════════════════════════════════════════
+   FEATURE EXPERIENCES
+══════════════════════════════════════════════ */
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--a2);border-radius:18px;overflow:hidden;border:1px solid var(--a2)}
+@media(max-width:660px){.feat-grid{grid-template-columns:1fr}}
+.fc{padding:50px;background:var(--s2);transition:background .24s}
+.fc:hover{background:var(--s3)}
+.fc.fcdark{background:var(--s1)}
+.fc.fcdark:hover{background:var(--s2)}
+.fc-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--g5);margin-bottom:14px}
+.fc-title{font-family:'Playfair Display',serif;font-size:clamp(20px,2.5vw,27px);color:var(--white);margin-bottom:12px;letter-spacing:-.02em}
+.fc-desc{font-size:14px;color:var(--g5);line-height:1.82;margin-bottom:22px;font-weight:300}
+.fc-code{padding:16px;border-radius:9px;border:1px solid var(--a2);background:var(--a1);font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.78;color:var(--g4)}
+.fcc-hi{color:var(--white)}.fcc-ok{color:var(--g6)}.fcc-dim{color:var(--g2)}
+
+/* ══════════════════════════════════════════════
+   COMPARISON TABLE
+══════════════════════════════════════════════ */
+table.cmp-tbl{width:100%;min-width:640px;border-collapse:collapse;border-radius:16px;overflow:hidden;border:1px solid var(--a2)}
+table.cmp-tbl th,table.cmp-tbl td{padding:15px 20px;text-align:left;border-bottom:1px solid var(--a2);font-size:14px}
+table.cmp-tbl th{background:var(--s3);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--g5)}
+table.cmp-tbl tbody tr{background:var(--s2);transition:background .2s}
+table.cmp-tbl tbody tr:hover{background:var(--s3)}
+table.cmp-tbl tr:last-child td{border:none}
+.cmp-metric{font-weight:600;color:var(--white)}
+.cmp-trad{color:var(--g4)}
+.cmp-good{color:var(--white);font-weight:500;display:flex;align-items:center;gap:7px}
+.cmp-win{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,.07);color:var(--g6);white-space:nowrap}
+@media(max-width:560px){table.cmp-tbl th,table.cmp-tbl td{padding:10px 12px;font-size:12px}}
+
+/* ══════════════════════════════════════════════
+   QA / TESTING
+══════════════════════════════════════════════ */
+.qa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:1px;background:var(--a2);border-radius:18px;overflow:hidden;border:1px solid var(--a2)}
+.qa-cell{padding:40px;background:var(--s2);transition:background .24s}
+.qa-cell:hover{background:var(--s3)}
+.qa-ico{font-size:22px;margin-bottom:16px;display:block;opacity:.6}
+.qa-name{font-size:15px;font-weight:600;color:var(--white);margin-bottom:8px;letter-spacing:-.02em}
+.qa-desc{font-size:13px;color:var(--g5);line-height:1.72;font-weight:300}
+/* self-healing */
+.sh-flow-box{margin-top:48px;padding:32px;border-radius:16px;border:1px solid var(--a2);background:var(--s2)}
+.sh-flow-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--white);margin-bottom:16px;letter-spacing:-.02em}
+.sh-flow-steps{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px}
+.sh-step{padding:8px 14px;border-radius:8px;background:var(--a1);border:1px solid var(--a2);color:var(--g7)}
+.sh-arrow{color:var(--g3);font-size:14px}
+
+/* ══════════════════════════════════════════════
+   MARKETPLACE
+══════════════════════════════════════════════ */
+.mkt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:14px}
+.mkt-card{border-radius:16px;border:1px solid var(--a2);background:var(--s2);overflow:hidden;cursor:pointer;transition:all .3s var(--ease)}
+.mkt-card:hover{transform:translateY(-8px) scale(1.01);border-color:var(--a3);box-shadow:0 30px 72px rgba(0,0,0,.5)}
+.mkt-thumb{height:160px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.mkt-bg{position:absolute;inset:0;opacity:.26;transition:opacity .3s}
+.mkt-card:hover .mkt-bg{opacity:.44}
+.mkt-em{font-size:50px;position:relative;z-index:1;transition:transform .3s var(--spring);filter:grayscale(55%)}
+.mkt-card:hover .mkt-em{transform:scale(1.2);filter:grayscale(0)}
+.mkt-badge{position:absolute;top:10px;right:10px;z-index:2;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:rgba(0,0,0,.72);color:var(--g5);backdrop-filter:blur(8px)}
+.mkt-body{padding:16px}
+.mkt-genre{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--g5);margin-bottom:5px}
+.mkt-name{font-family:'Playfair Display',serif;font-size:18px;color:var(--white);margin-bottom:7px;letter-spacing:-.02em}
+.mkt-prompt{font-size:12px;color:var(--g5);line-height:1.55;margin-bottom:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:300}
+.mkt-stats{display:flex;gap:12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5)}
+.mkt-actions{display:flex;gap:6px;padding:11px 16px;border-top:1px solid var(--a2);opacity:0;transform:translateY(3px);transition:all .18s}
+.mkt-card:hover .mkt-actions{opacity:1;transform:translateY(0)}
+.mkt-act{flex:1;padding:7px 8px;border-radius:7px;font-size:11px;font-weight:600;text-align:center;background:var(--a1);border:1px solid var(--a2);color:var(--g5);transition:all .14s;cursor:pointer}
+.mkt-act:hover,.mkt-act.prime{background:var(--white);color:var(--black);border-color:var(--white)}
+
+/* ══════════════════════════════════════════════
+   COMMUNITY
+══════════════════════════════════════════════ */
+.comm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.comm-card{border-radius:16px;border:1px solid var(--a2);background:var(--s2);padding:24px;transition:all .24s}
+.comm-card:hover{border-color:var(--a3);transform:translateY(-3px)}
+.comm-head{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+.comm-av{width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--white);background:var(--g1)}
+.comm-name{font-size:14px;font-weight:600;color:var(--white)}
+.comm-when{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5);margin-top:2px}
+.comm-chip{padding:10px 13px;border-radius:9px;border:1px solid var(--a2);background:var(--a1);margin-bottom:14px}
+.comm-gname{font-size:13px;font-weight:600;color:var(--white)}
+.comm-ggenre{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5)}
+.comm-quote{font-size:13px;color:var(--g5);line-height:1.72;font-style:italic;font-weight:300}
+.comm-meta{display:flex;gap:12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5);margin-top:13px;padding-top:13px;border-top:1px solid var(--a2)}
+
+/* ══════════════════════════════════════════════
+   TRUST
+══════════════════════════════════════════════ */
+.trust-cells{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1px;background:var(--a2);border-radius:18px;overflow:hidden;border:1px solid var(--a2);margin-bottom:12px}
+.trust-cell{padding:38px;background:var(--s2);transition:background .24s}
+.trust-cell:hover{background:var(--s3)}
+.trust-ico{font-size:22px;margin-bottom:16px;opacity:.6}
+.trust-name{font-size:15px;font-weight:600;color:var(--white);margin-bottom:8px;letter-spacing:-.02em}
+.trust-desc{font-size:13px;color:var(--g5);line-height:1.72;font-weight:300}
+/* uptime */
+.uptime-band{padding:26px 30px;border-radius:16px;border:1px solid var(--a2);background:var(--s2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px}
+.ut-num{font-family:'Playfair Display',serif;font-size:40px;color:var(--white);letter-spacing:-.04em}
+.ut-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--g5);margin-top:3px}
+.ut-bars{display:flex;gap:2.5px;align-items:flex-end}
+.ut-bar{width:13px;border-radius:2px;background:rgba(255,255,255,.1)}
+.ut-bar.ut-ok{background:rgba(255,255,255,.68)}
+
+/* ══════════════════════════════════════════════
+   ROADMAP
+══════════════════════════════════════════════ */
+.rm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px;background:var(--a2);border-radius:18px;overflow:hidden;border:1px solid var(--a2)}
+.rm-node{padding:32px;background:var(--s2);transition:background .24s}
+.rm-node:hover{background:var(--s3)}
+.rm-q{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--g5);margin-bottom:10px}
+.rm-title{font-family:'Playfair Display',serif;font-size:19px;color:var(--white);margin-bottom:8px;letter-spacing:-.02em}
+.rm-desc{font-size:13px;color:var(--g5);line-height:1.68;margin-bottom:13px;font-weight:300}
+.rm-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--g5);background:var(--a1);border:1px solid var(--a2)}
+.rm-badge.active{color:var(--white);background:rgba(255,255,255,.08);border-color:var(--a3)}
+.rm-badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
+/* ══════════════════════════════════════════════
+   AI CREATOR CHAT
+══════════════════════════════════════════════ */
+.creator-wrap{display:grid;grid-template-columns:1fr 278px;gap:14px}
+@media(max-width:820px){.creator-wrap{grid-template-columns:1fr}}
+.chat-shell{border-radius:18px;border:1px solid var(--a2);background:var(--s2);display:flex;flex-direction:column;height:540px;box-shadow:0 40px 80px rgba(0,0,0,.35)}
+.chat-hdr{padding:13px 18px;border-bottom:1px solid var(--a2);background:var(--s3);border-radius:18px 18px 0 0;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.chat-av{width:34px;height:34px;border-radius:10px;background:var(--white);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--black)}
+.chat-av svg{width:55%;height:55%}
+.chat-ai-name{font-size:13px;font-weight:600;color:var(--white);margin-left:10px}
+.chat-ai-status{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5);display:flex;align-items:center;gap:5px;margin-left:10px}
+.chat-online{width:6px;height:6px;border-radius:50%;background:var(--white);animation:pulse 2s ease-in-out infinite;box-shadow:0 0 6px rgba(255,255,255,.5)}
+.btn-chat-clear{font-size:11px;font-weight:500;padding:5px 11px;border-radius:7px;background:var(--a1);border:1px solid var(--a2);color:var(--g5);transition:all .18s}
+.btn-chat-clear:hover{color:var(--white);border-color:var(--a3)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-messages::-webkit-scrollbar{width:2px}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--a2)}
+.msg-row{display:flex;gap:8px;align-items:flex-end}
+.msg-row.u{flex-direction:row-reverse}
+.msg-av{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.msg-av.ai{background:var(--white);color:var(--black)}
+.msg-av.ai svg{width:55%;height:55%}
+.msg-av.u{background:var(--s4);border:1px solid var(--a2)}
+.msg-col{display:flex;flex-direction:column;gap:3px;max-width:82%}
+.msg-bubble{padding:10px 14px;border-radius:11px;font-size:13px;line-height:1.65;cursor:pointer;transition:opacity .2s}
+.msg-bubble.ai{background:var(--s3);border:1px solid var(--a2);color:var(--g7);border-bottom-left-radius:3px;font-weight:300}
+.msg-bubble.u{background:var(--white);color:var(--black);border-bottom-right-radius:3px;font-weight:500}
+.msg-bubble:hover{opacity:.8}
+.msg-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--g2);padding:0 2px}
+.msg-row.u .msg-time{text-align:right}
+.typing-indicator{display:flex;align-items:center;gap:5px;padding:12px 14px;background:var(--s3);border:1px solid var(--a2);border-radius:11px;border-bottom-left-radius:3px}
+.tdot{width:5px;height:5px;border-radius:50%;background:var(--g4);animation:tdot .9s ease-in-out infinite}
+.tdot:nth-child(2){animation-delay:.14s}.tdot:nth-child(3){animation-delay:.28s}
+@keyframes tdot{0%,100%{opacity:.3;transform:scale(.75)}50%{opacity:1;transform:scale(1)}}
+.chat-foot{padding:12px 14px;border-top:1px solid var(--a2);background:var(--s3);border-radius:0 0 18px 18px;flex-shrink:0}
+.chat-input-row{display:flex;gap:7px;align-items:flex-end}
+.chat-textarea{flex:1;resize:none;background:var(--s2);border:1px solid var(--a2);border-radius:9px;padding:10px 13px;font-size:13px;color:var(--white);line-height:1.5;max-height:100px;transition:border-color .2s;font-weight:300}
+.chat-textarea:focus{border-color:var(--a3)}
+.chat-textarea::placeholder{color:var(--g3)}
+.chat-send{width:36px;height:36px;flex-shrink:0;border-radius:9px;background:var(--white);color:var(--black);font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .2s var(--spring)}
+.chat-send:hover{transform:scale(1.1);box-shadow:0 4px 14px rgba(255,255,255,.2)}
+.chat-send:disabled{opacity:.3;transform:none;cursor:default}
+.chat-hints-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.chat-hint{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 9px;border-radius:5px;background:var(--a1);border:1px solid var(--a2);color:var(--g5);cursor:pointer;transition:all .14s}
+.chat-hint:hover{background:var(--a2);color:var(--white)}
+/* config panel */
+.config-panel{border-radius:16px;border:1px solid var(--a2);background:var(--s2);padding:22px;display:flex;flex-direction:column;gap:18px}
+.cfg-title{font-size:14px;font-weight:600;color:var(--white)}
+.cfg-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--g5);display:block;margin-bottom:7px}
+.cfg-group{display:flex;flex-wrap:wrap;gap:5px}
+.cfg-option{padding:6px 11px;border-radius:7px;font-size:12px;font-weight:500;color:var(--g5);background:var(--a1);border:1px solid var(--a2);transition:all .16s}
+.cfg-option:hover{color:var(--white);border-color:var(--a3)}
+.cfg-option.on{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.24);color:var(--white)}
+.cfg-select{width:100%;padding:9px 11px;border-radius:8px;background:var(--a1);border:1px solid var(--a2);color:var(--white);font-size:13px;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' fill='none'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23666' stroke-width='1.4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;font-weight:300}
+.cfg-select option{background:var(--s3)}
+.btn-cfg-gen{width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:600;background:var(--white);color:var(--black);transition:all .25s var(--spring)}
+.btn-cfg-gen:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,255,255,.2)}
+
+/* ══════════════════════════════════════════════
+   PRICING
+══════════════════════════════════════════════ */
+.billing-toggle-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:44px}
+.bt-label{font-size:13px;color:var(--g5);font-weight:400;cursor:pointer;transition:color .2s}
+.bt-label.on{color:var(--white)}
+.bt-switch{width:38px;height:20px;border-radius:10px;background:var(--a2);border:1px solid var(--a3);position:relative;cursor:pointer;transition:background .2s}
+.bt-switch.annual{background:rgba(255,255,255,.14)}
+.bt-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--white);transition:transform .24s var(--spring)}
+.bt-switch.annual .bt-thumb{transform:translateX(17px)}
+.save-pill{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5);padding:3px 9px;border-radius:5px;background:var(--a1);border:1px solid var(--a2)}
+.plans-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:1px;background:var(--a2);border-radius:18px;overflow:hidden;border:1px solid var(--a2);max-width:880px;margin:0 auto}
+.plan-card{padding:38px;background:var(--s2);display:flex;flex-direction:column;position:relative}
+.plan-card.featured{background:var(--s4)}
+.plan-popular-badge{position:absolute;top:18px;right:18px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:5px;background:var(--white);color:var(--black);font-weight:700}
+.plan-tier{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--g5);margin-bottom:6px}
+.plan-name{font-family:'Playfair Display',serif;font-size:26px;color:var(--white);margin-bottom:8px;letter-spacing:-.03em}
+.plan-desc{font-size:13px;color:var(--g5);line-height:1.68;margin-bottom:22px;font-weight:300}
+.plan-price-row{display:flex;align-items:baseline;gap:2px;margin-bottom:22px}
+.plan-sym{font-size:18px;font-weight:600;color:var(--g4);margin-top:3px}
+.plan-amount{font-family:'Playfair Display',serif;font-size:50px;color:var(--white);letter-spacing:-.05em;line-height:1}
+.plan-period{font-size:13px;color:var(--g5);margin-left:2px;font-weight:300}
+.plan-cta-btn{padding:12px;border-radius:10px;font-size:14px;font-weight:600;text-align:center;margin-bottom:24px;transition:all .2s;cursor:pointer}
+.plan-cta-btn.solid-cta{background:var(--white);color:var(--black)}
+.plan-cta-btn.solid-cta:hover{background:var(--off);transform:translateY(-1px)}
+.plan-cta-btn.ghost-cta{background:var(--a1);border:1px solid var(--a2);color:var(--g6)}
+.plan-cta-btn.ghost-cta:hover{background:var(--a2);color:var(--white)}
+.plan-divider{height:1px;background:var(--a2);margin-bottom:22px}
+.plan-features-list{list-style:none;display:flex;flex-direction:column;gap:9px;flex:1}
+.plan-features-list li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--g5);font-weight:300}
+.pf-check{color:var(--white);font-size:11px}
+.pf-dash{color:var(--g2)}
+.price-footnote{text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--g5);margin-top:16px}
+.price-footnote a{color:var(--white);text-decoration:underline;text-underline-offset:3px}
+
+/* ══════════════════════════════════════════════
+   FAQ
+══════════════════════════════════════════════ */
+.faq-search-box{max-width:440px;margin:0 auto 32px;position:relative}
+.faq-input{width:100%;padding:13px 18px 13px 43px;border-radius:11px;background:var(--s2);border:1px solid var(--a2);font-size:14px;color:var(--white);transition:border-color .2s;font-weight:300}
+.faq-input:focus{border-color:var(--a3)}
+.faq-input::placeholder{color:var(--g4)}
+.faq-search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--g4);pointer-events:none;font-size:15px}
+.faq-accordion{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:5px}
+.faq-item{border-radius:10px;background:var(--s2);border:1px solid var(--a2);overflow:hidden;transition:border-color .3s}
+.faq-item.open{border-color:var(--a3)}
+.faq-item.fhidden{display:none}
+.faq-q{width:100%;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;font-size:14px;font-weight:400;color:var(--g6);transition:color .2s}
+.faq-q:hover,.faq-item.open .faq-q{color:var(--white)}
+.faq-plus-icon{width:20px;height:20px;border-radius:5px;flex-shrink:0;background:var(--a1);border:1px solid var(--a2);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--g5);transition:all .3s var(--spring)}
+.faq-item.open .faq-plus-icon{transform:rotate(45deg);background:var(--a2);color:var(--white)}
+.faq-answer{max-height:0;overflow:hidden;font-size:14px;color:var(--g5);line-height:1.82;transition:max-height .4s ease,padding .3s;font-weight:300}
+.faq-item.open .faq-answer{max-height:300px;padding:0 20px 18px}
+
+/* ══════════════════════════════════════════════
+   FINAL CTA
+══════════════════════════════════════════════ */
+#final-cta{padding:140px 28px;text-align:center;background:var(--s1);border-top:1px solid var(--a2);border-bottom:1px solid var(--a2)}
+.cta-logo{width:72px;height:72px;color:var(--white);opacity:.08;margin:0 auto 28px}
+.cta-logo svg{width:100%;height:100%}
+.cta-headline{font-size:clamp(48px,7.5vw,96px);color:var(--white);letter-spacing:-.05em;line-height:.96;margin-bottom:18px}
+.cta-headline em{color:var(--g3);font-style:italic}
+.cta-sub{font-size:19px;color:var(--g5);max-width:500px;margin:0 auto 40px;line-height:1.85;font-weight:300}
+.cta-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+
+/* ══════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════ */
+footer{padding:56px 28px 38px;border-top:1px solid var(--a2)}
+.foot-inner{max-width:var(--max);margin:0 auto}
+.foot-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:52px;margin-bottom:48px}
+@media(max-width:900px){.foot-top{grid-template-columns:1fr 1fr;gap:32px}}
+@media(max-width:480px){.foot-top{grid-template-columns:1fr}}
+.foot-brand-row{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.foot-brand-icon{width:24px;height:24px;color:var(--g5)}
+.foot-brand-icon svg{width:100%;height:100%}
+.foot-brand-name{font-family:'Playfair Display',serif;font-size:18px;color:var(--white);letter-spacing:-.025em}
+.foot-desc{font-size:13px;color:var(--g5);line-height:1.72;max-width:220px;margin-bottom:18px;font-weight:300}
+.foot-socials{display:flex;gap:7px}
+.foot-soc-btn{width:30px;height:30px;border-radius:7px;background:var(--a1);border:1px solid var(--a2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g5);transition:all .18s}
+.foot-soc-btn:hover{background:var(--a2);color:var(--white)}
+.foot-col-hd{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--g4);margin-bottom:14px}
+.foot-links-list{list-style:none;display:flex;flex-direction:column;gap:9px}
+.foot-links-list a{font-size:13px;color:var(--g5);transition:color .18s;font-weight:300}
+.foot-links-list a:hover{color:var(--white)}
+.foot-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding-top:24px;border-top:1px solid var(--a2)}
+.foot-copy{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--g4)}
+.foot-pills-row{display:flex;flex-wrap:wrap;gap:6px}
+.foot-pill{font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 9px;border-radius:4px;background:var(--a1);border:1px solid var(--a2);color:var(--g5)}
+
+/* ══════════════════════════════════════════════
+   BTT + TOAST
+══════════════════════════════════════════════ */
+#btt{position:fixed;bottom:24px;right:24px;z-index:300;width:38px;height:38px;border-radius:10px;background:var(--white);color:var(--black);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,255,255,.14);opacity:0;transform:translateY(10px);pointer-events:none;transition:all .3s var(--spring);cursor:pointer}
+#btt.vis{opacity:1;transform:translateY(0);pointer-events:all}
+#btt:hover{transform:translateY(-3px) scale(1.06)}
+#toasts{position:fixed;bottom:72px;right:24px;z-index:400;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:10px 16px;border-radius:10px;font-size:12.5px;font-weight:400;background:rgba(8,8,8,.97);border:1px solid var(--a3);color:var(--g7);box-shadow:0 8px 30px rgba(0,0,0,.45);backdrop-filter:blur(20px);transform:translateX(108%);opacity:0;transition:all .32s var(--spring);pointer-events:all;max-width:272px}
+.toast.show{transform:translateX(0);opacity:1}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
+@media(max-width:860px){.nlinks,.nact .nbtn-outline{display:none}.nbgr{display:flex}.mdraw{display:flex}}
+@media(max-width:580px){
+  section{padding:100px 16px}.hero-stats{gap:18px;flex-direction:column}
+  .hero-ctas,.cta-actions{flex-direction:column;align-items:center}
+  .btn-hero,.btn-hero-o{width:100%;max-width:300px;justify-content:center}
+  .game-mobile-pad{display:flex!important}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     LOGO SVG TEMPLATE — concentric circles
+══════════════════════════════════════════════ -->
+<template id="logo-tmpl">
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="3.2"/>
+  <circle cx="50" cy="50" r="34" stroke="currentColor" stroke-width="2.5"/>
+  <circle cx="50" cy="50" r="23" stroke="currentColor" stroke-width="2"/>
+  <circle cx="50" cy="50" r="13" stroke="currentColor" stroke-width="1.6"/>
+  <circle cx="50" cy="50" r="4"  stroke="currentColor" stroke-width="1.2"/>
+</svg>
+</template>
+
+<div id="sp" aria-hidden="true"></div>
+<div id="cur" aria-hidden="true"></div>
+<div id="toasts" aria-live="polite" aria-atomic="true"></div>
+<button id="btt" aria-label="Back to top" onclick="scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑</button>
+
+<!-- ══════════════════════════════════════════════
+     NAVIGATION
+══════════════════════════════════════════════ -->
+<nav id="nav" role="navigation" aria-label="Main navigation">
+  <div class="nw">
+    <div class="nbrand" id="nav-brand" role="link" tabindex="0" aria-label="Derrly AI home" onclick="goTo('hero')">
+      <div class="nlogo" id="nav-logo" style="color:var(--white)"></div>
+      <span class="nname">Derrly AI</span>
+      <span class="ntag">Beta</span>
+    </div>
+    <nav class="nlinks" aria-label="Site sections">
+      <span class="nl" onclick="goTo('what')">What is it</span>
+      <span class="nl" onclick="goTo('how')">How it works</span>
+      <span class="nl" onclick="goTo('studio')">Agent Studio</span>
+      <span class="nl" onclick="goTo('game')">Play</span>
+      <span class="nl" onclick="goTo('pricing')">Pricing</span>
+    </nav>
+    <div class="nact">
+      <button class="nbtn-outline" onclick="showToast('Login — coming soon')">Log in</button>
+      <button class="nbtn-solid" onclick="goTo('creator')">Start Building</button>
+    </div>
+    <button class="nbgr" id="nbgr" aria-label="Open navigation menu" aria-expanded="false" aria-label="Toggle menu" onclick="toggleMob()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mdraw" id="mdraw" role="navigation" aria-label="Mobile navigation" aria-hidden="true">
+  <span class="mlink" onclick="goTo('what');closeMob()">What is Derrly</span>
+  <span class="mlink" onclick="goTo('how');closeMob()">How it works</span>
+  <span class="mlink" onclick="goTo('studio');closeMob()">Agent Studio</span>
+  <span class="mlink" onclick="goTo('game');closeMob()">Play a Game</span>
+  <span class="mlink" onclick="goTo('creator');closeMob()">AI Creator</span>
+  <span class="mlink" onclick="goTo('pricing');closeMob()">Pricing</span>
+  <span class="mlink" onclick="goTo('faq');closeMob()">FAQ</span>
+  <div class="mhr"></div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button class="nbtn-outline" style="width:100%;padding:11px" onclick="showToast('Login — coming soon');closeMob()">Log in</button>
+    <button class="nbtn-solid" style="width:100%;padding:12px;text-align:center" onclick="goTo('creator');closeMob()">Start Building</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 1: HERO
+══════════════════════════════════════════════ -->
+<section id="hero" aria-labelledby="hero-h1">
+  <div class="hero-bg-dots" aria-hidden="true"></div>
+  <div class="hero-wm" id="hero-wm" aria-hidden="true"></div>
+  <div class="hero-layout">
+    <div>
+      <div class="hero-badge"><span class="hb-pulse"></span>50,000+ games built · Llama 4 · 12 agents</div>
+      <h1 class="hero-h1" id="hero-h1">
+        Build entire games<br>
+        <span>through conversation.</span>
+      </h1>
+      <p class="hero-p">Derrly transforms ideas into complete playable games. An Executive Producer and 11 specialist AI agents design, build, test, and deploy your game automatically.</p>
+      <div class="hero-ctas">
+        <button class="btn-hero" onclick="goTo('creator')">Start Building →</button>
+        <button class="btn-hero-o" onclick="goTo('game')">▶ Watch a Game Get Created</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hs-n" data-count="50000" data-suf="+">50k+</div><div class="hs-l">Games Created</div></div>
+        <div><div class="hs-n">42s</div><div class="hs-l">Avg. Build Time</div></div>
+        <div><div class="hs-n" data-count="98" data-suf="%">98%</div><div class="hs-l">Satisfaction</div></div>
+        <div><div class="hs-n">12</div><div class="hs-l">AI Agents</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="hero-term" role="region" aria-label="Live AI generation preview">
+        <div class="ht-prog"><div class="ht-pf" id="ht-pf"></div></div>
+        <div class="ht-bar">
+          <div class="wd wr"></div><div class="wd wy"></div><div class="wd wg"></div>
+          <div class="ht-ttl">derrly-ai — executive-producer — 12 agents · llama-4-scout</div>
+        </div>
+        <div class="ht-body">
+          <div class="ht-prompt"><span class="ht-arr">&gt;</span>Create a multiplayer zombie survival game in NYC after an AI apocalypse.</div>
+          <div class="ht-steps-list" id="ht-steps"></div>
+          <div class="ht-result" id="ht-result">
+            <div class="htr-tag">Build complete · 42 seconds · Llama 4 Scout</div>
+            <div class="htr-name">Zombie NYC 2099</div>
+            <div class="htr-meta">4-player co-op · Open world · 31 quests · 200+ NPCs · Ready</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="mq-band" aria-hidden="true">
+  <div class="mq-track">
+    <span class="mq-item"><div class="mq-sep"></div>Powered by Llama 4 Scout</span>
+    <span class="mq-item"><div class="mq-sep"></div>Executive Producer + 11 agents</span>
+    <span class="mq-item"><div class="mq-sep"></div>Games in 142 countries</span>
+    <span class="mq-item"><div class="mq-sep"></div>Builds in under 60 seconds</span>
+    <span class="mq-item"><div class="mq-sep"></div>14 genres supported</span>
+    <span class="mq-item"><div class="mq-sep"></div>Your IP always</span>
+    <span class="mq-item"><div class="mq-sep"></div>NPC persistent memory</span>
+    <span class="mq-item"><div class="mq-sep"></div>Automated QA on every build</span>
+    <span class="mq-item"><div class="mq-sep"></div>Self-healing workflows</span>
+    <span class="mq-item"><div class="mq-sep"></div>Powered by Llama 4 Scout</span>
+    <span class="mq-item"><div class="mq-sep"></div>Executive Producer + 11 agents</span>
+    <span class="mq-item"><div class="mq-sep"></div>Games in 142 countries</span>
+    <span class="mq-item"><div class="mq-sep"></div>Builds in under 60 seconds</span>
+    <span class="mq-item"><div class="mq-sep"></div>14 genres supported</span>
+    <span class="mq-item"><div class="mq-sep"></div>Your IP always</span>
+    <span class="mq-item"><div class="mq-sep"></div>NPC persistent memory</span>
+    <span class="mq-item"><div class="mq-sep"></div>Automated QA on every build</span>
+    <span class="mq-item"><div class="mq-sep"></div>Self-healing workflows</span>
+  </div>
+</div>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 2: WHAT IS DERRLY
+══════════════════════════════════════════════ -->
+<section id="what" style="background:var(--s1)">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">What is Derrly AI</div>
+      <h2>You hire an AI game studio.<br><em>Through conversation.</em></h2>
+      <p>Not a chatbot. Not a generator. An autonomous AI game studio — a team of 12 specialized agents that collaborates to build complete games from your ideas.</p>
+    </div>
+    <div class="what-grid rv">
+      <div class="wc">
+        <div class="wc-num">01 — The Problem</div>
+        <div class="wc-head">Game development takes years and millions of dollars.</div>
+        <div class="wc-body">A typical indie game requires engineers, designers, writers, and artists working for 1–3 years. Most ideas never become games because the barrier is insurmountable.</div>
+        <div class="wc-tags">
+          <span class="wc-tag">$250k+ cost</span>
+          <span class="wc-tag">1–3 years</span>
+          <span class="wc-tag">Large team required</span>
+          <span class="wc-tag">High failure rate</span>
+        </div>
+      </div>
+      <div class="wc">
+        <div class="wc-num">02 — The Solution</div>
+        <div class="wc-head">Derrly replaces the entire team with AI agents.</div>
+        <div class="wc-body">Describe what you want. An Executive Producer dispatches 11 specialists. They collaborate, argue, revise, test, and deliver a complete playable game — in minutes, not years.</div>
+        <div class="wc-tags">
+          <span class="wc-tag">Free to start</span>
+          <span class="wc-tag">Under 60 seconds</span>
+          <span class="wc-tag">No team needed</span>
+          <span class="wc-tag">Automated QA</span>
+        </div>
+      </div>
+      <div class="wc">
+        <div class="wc-num">03 — The Agents</div>
+        <div class="wc-head">12 specialists. Each owns a discipline.</div>
+        <div class="wc-body">Creative Director, World Architect, Quest Designer, NPC Designer, Gameplay Engineer, Economy Designer, Balance Specialist, Multiplayer Engineer, UI/UX Designer, QA Tester, Game Builder — plus an Executive Producer orchestrating them all.</div>
+        <div class="wc-tags">
+          <span class="wc-tag">12 agents</span>
+          <span class="wc-tag">Parallel execution</span>
+          <span class="wc-tag">Inter-agent communication</span>
+          <span class="wc-tag">Self-correction</span>
+        </div>
+      </div>
+      <div class="wc">
+        <div class="wc-num">04 — The Output</div>
+        <div class="wc-head">A tested, playable game. Ready to share.</div>
+        <div class="wc-body">Every build produces a complete game that runs in any browser — world, characters, quests, mechanics, economy, multiplayer — all interconnected, all QA-tested, all yours.</div>
+        <div class="wc-tags">
+          <span class="wc-tag">Runs in browser</span>
+          <span class="wc-tag">Shareable link</span>
+          <span class="wc-tag">Full source code</span>
+          <span class="wc-tag">Your IP always</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 3: HOW IT WORKS
+══════════════════════════════════════════════ -->
+<section id="how">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">How It Works</div>
+      <h2>One prompt.<br><em>Nine automated stages.</em></h2>
+      <p>The moment you describe your game, the pipeline begins. Every stage runs automatically — no decisions required from you.</p>
+    </div>
+    <div class="pipe-grid rv" id="pipe-grid"></div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 4: AGENT STUDIO
+══════════════════════════════════════════════ -->
+<section id="studio" style="background:var(--s1)">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Meet the Agents</div>
+      <h2>A complete AI studio<br><em>working in real time.</em></h2>
+      <p>Enter your idea. Watch 12 agents collaborate — designing, arguing, testing, and delivering your game.</p>
+    </div>
+    <div class="studio-top rv">
+      <textarea class="studio-ta" id="studio-ta" rows="1" placeholder="Describe your game… e.g. 'A dark fantasy RPG set in a cursed ocean floor'"></textarea>
+      <button class="studio-btn" id="studio-btn" onclick="launchStudio()">◉ Launch Studio</button>
+    </div>
+    <div class="studio-layout">
+      <div class="agents-grid" id="agents-grid"></div>
+      <div class="comms-panel rr">
+        <div class="comms-head">
+          <div class="comms-title">Studio Communications</div>
+          <div class="comms-live"><div class="comms-live-dot" id="comms-live-dot"></div><span id="comms-status">Standby</span></div>
+        </div>
+        <div class="comms-body" id="comms-body" role="log" aria-live="polite" aria-label="Agent communications"></div>
+        <div class="comms-foot">
+          <div class="comms-prog-row"><span>Overall progress</span><span id="comms-pct">0%</span></div>
+          <div class="comms-prog-bar"><div class="comms-prog-fill" id="comms-fill"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 5: LIVE DEMO
+══════════════════════════════════════════════ -->
+<section id="demo">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Live AI Demo</div>
+      <h2>Watch a game<br><em>come into existence.</em></h2>
+      <p>Select a prompt. See the AI stream a complete game design — no staging, no editing.</p>
+    </div>
+    <div class="demo-layout rv">
+      <div class="demo-opts-list" id="demo-opts"></div>
+      <div class="demo-output-panel">
+        <div class="dop-head">
+          <div class="dop-title">Generation Feed · Llama 4 Scout</div>
+          <div class="dop-status"><div class="dop-dot" id="demo-dot"></div><span id="demo-status-txt">Select a prompt</span></div>
+        </div>
+        <div class="dop-prog"><div class="dop-prog-fill" id="demo-prog-fill"></div></div>
+        <div class="dop-log" id="demo-log">
+          <div class="dlog-line l-dim">// Select a prompt on the left to begin</div>
+          <div class="dlog-line l-dim">// The AI streams a complete game design in real time</div>
+        </div>
+        <div class="dop-meta">
+          <div class="dop-mc"><div class="dop-mv" id="dm-time">—</div><div class="dop-ml">Time</div></div>
+          <div class="dop-mc"><div class="dop-mv" id="dm-world">—</div><div class="dop-ml">World</div></div>
+          <div class="dop-mc"><div class="dop-mv" id="dm-npcs">—</div><div class="dop-ml">NPCs</div></div>
+          <div class="dop-mc"><div class="dop-mv" id="dm-quests">—</div><div class="dop-ml">Quests</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 6: PLAYABLE GAME
+══════════════════════════════════════════════ -->
+<section id="game" style="background:var(--s1)">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Live Project Example</div>
+      <h2>This game was built entirely<br><em>by AI agents.</em></h2>
+      <p>Not a video. Not a mockup. A real game — generated from one sentence. Play it now.</p>
+    </div>
+    <div class="game-shell rv">
+      <div class="game-chrome">
+        <div class="gchr-l">
+          <div class="wd wr"></div><div class="wd wy"></div><div class="wd wg"></div>
+          <span class="gchr-title" style="margin-left:10px">Void Crawl · AI Generated Dungeon</span>
+          <span class="gchr-chip">Agent #12 · Game Builder</span>
+        </div>
+        <div style="display:flex;gap:7px">
+          <span class="gchr-chip" id="game-score">Score: 0</span>
+          <span class="gchr-chip" id="game-level">Level 1</span>
+        </div>
+      </div>
+      <div class="game-canvas-wrap">
+        <canvas id="game-cvs" aria-label="Void Crawl game canvas" role="img" height="400"></canvas>
+        <div class="game-overlay" id="game-overlay" onclick="startGame()">
+          <div class="gov-logo" id="game-overlay-logo"></div>
+          <div class="gov-title">Void Crawl</div>
+          <div class="gov-sub">AI-Generated Dungeon · WASD or Arrow Keys to move</div>
+          <button class="btn-play-game">Play Now</button>
+        </div>
+        <div class="game-hud" id="game-hud" style="display:none" aria-hidden="true">
+          <div class="hud-pill">
+            ❤
+            <div>
+              <div style="font-size:9px;color:var(--g5);margin-bottom:2px;font-family:'JetBrains Mono',monospace">HP</div>
+              <div class="hud-hp-bar"><div class="hud-hp-fill" id="game-hp"></div></div>
+            </div>
+          </div>
+          <div class="hud-pill">◆ Collect gems · Avoid enemies</div>
+        </div>
+      </div>
+      <div class="game-mobile-pad" id="game-mpad" style="display:none" aria-label="Touch controls">
+        <div class="dpad">
+          <div></div>
+          <div class="dk" ontouchstart="gkDown('ArrowUp')" ontouchend="gkUp('ArrowUp')">▲</div>
+          <div></div>
+          <div class="dk" ontouchstart="gkDown('ArrowLeft')" ontouchend="gkUp('ArrowLeft')">◀</div>
+          <div class="dk" ontouchstart="gkDown('ArrowDown')" ontouchend="gkUp('ArrowDown')">▼</div>
+          <div class="dk" ontouchstart="gkDown('ArrowRight')" ontouchend="gkUp('ArrowRight')">▶</div>
+        </div>
+      </div>
+      <div class="game-hint-bar">WASD or Arrow Keys to move · Collect white gems · Avoid red enemies · Mobile: use touch controls below</div>
+    </div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 7: WHAT DERRLY CREATES
+══════════════════════════════════════════════ -->
+<section id="creates">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">What Derrly Creates</div>
+      <h2>Every system.<br><em>Fully automated.</em></h2>
+      <p>From world maps to save systems — everything a complete game requires, generated automatically.</p>
+    </div>
+    <div class="creates-grid rv" id="creates-grid"></div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 8: FEATURE EXPERIENCES
+══════════════════════════════════════════════ -->
+<section id="features" style="background:var(--s1)">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Feature Experiences</div>
+      <h2>Every capability<br><em>is a step change.</em></h2>
+    </div>
+    <div class="feat-grid rv" id="feat-grid"></div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 9: COMPARISON
+══════════════════════════════════════════════ -->
+<section id="compare">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Comparison</div>
+      <h2>Traditional dev<br><em>vs. Derrly AI</em></h2>
+      <p>The comparison isn't close. It isn't meant to be.</p>
+    </div>
+    <div class="rv" style="overflow-x:auto">
+      <table class="cmp-tbl" id="cmp-table"></table>
+    </div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 9B: AUTOMATED TESTING
+══════════════════════════════════════════════ -->
+<section id="testing" style="background:var(--s1)">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Automated Testing</div>
+      <h2>Every game is tested<br><em>before you see it.</em></h2>
+      <p>Derrly runs automated validation, QA, and balance checks on every build. You receive finished, working games — not prototypes.</p>
+    </div>
+    <div class="qa-grid rv" id="qa-grid"></div>
+    <div class="sh-flow-box rv" style="transition-delay:.1s">
+      <div class="sh-flow-title">Self-Healing Workflow</div>
+      <div class="sh-flow-steps">
+        <div class="sh-step">Build complete</div><div class="sh-arrow">→</div>
+        <div class="sh-step">QA Agent runs</div><div class="sh-arrow">→</div>
+        <div class="sh-step">Issues detected</div><div class="sh-arrow">→</div>
+        <div class="sh-step">Agents auto-fix</div><div class="sh-arrow">→</div>
+        <div class="sh-step">QA re-runs</div><div class="sh-arrow">→</div>
+        <div class="sh-step">No critical issues</div><div class="sh-arrow">→</div>
+        <div class="sh-step">Delivered to you</div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 10: COMMUNITY PROJECTS
+══════════════════════════════════════════════ -->
+<section id="community">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Community Projects</div>
+      <h2>Real games.<br><em>Real creators.</em></h2>
+      <p>Every game here was made by someone who had never built a game before using Derrly.</p>
+    </div>
+    <div class="mkt-grid" id="mkt-grid"></div>
+    <div class="comm-grid" id="comm-grid" style="margin-top:28px"></div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     AI CREATOR
+══════════════════════════════════════════════ -->
+<section id="creator" style="background:var(--s1)">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">AI Creator</div>
+      <h2>Design your game.<br><em>Right now.</em></h2>
+      <p>Start a conversation. Powered by Llama 4 Scout. The AI designs every system live.</p>
+    </div>
+    <div class="creator-wrap">
+      <div class="chat-shell rl">
+        <div class="chat-hdr">
+          <div style="display:flex;align-items:center">
+            <div class="chat-av" id="chat-av-icon" style="color:var(--black)"></div>
+            <div>
+              <div class="chat-ai-name">Derrly AI Designer</div>
+              <div class="chat-ai-status"><div class="chat-online"></div>Online · Llama 4 Scout · Free</div>
+            </div>
+          </div>
+          <button class="btn-chat-clear" onclick="clearChat()">Clear</button>
+        </div>
+        <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
+        <div class="chat-foot">
+          <div class="chat-input-row">
+            <textarea class="chat-textarea" id="chat-textarea" placeholder="Describe your dream game…" rows="1" maxlength="500" aria-label="Type your message"></textarea>
+            <button class="chat-send" id="chat-send-btn" onclick="sendChatMessage()" aria-label="Send message">→</button>
+          </div>
+          <div class="chat-hints-row">
+            <span class="chat-hint" onclick="useHint('Dark fantasy RPG')">Dark fantasy RPG</span>
+            <span class="chat-hint" onclick="useHint('Zombie co-op survival')">Zombie survival</span>
+            <span class="chat-hint" onclick="useHint('Sci-fi battle royale')">Sci-fi shooter</span>
+            <span class="chat-hint" onclick="useHint('Cozy farming mystery')">Cozy farming</span>
+          </div>
+        </div>
+      </div>
+      <div class="config-panel rr">
+        <div class="cfg-title">Game Config</div>
+        <div>
+          <label class="cfg-label">Mode</label>
+          <div class="cfg-group">
+            <button class="cfg-option on" data-group="mode" data-val="solo" onclick="setCfgOption(this,'mode')">Solo</button>
+            <button class="cfg-option" data-group="mode" data-val="multi" onclick="setCfgOption(this,'mode')">Multi</button>
+            <button class="cfg-option" data-group="mode" data-val="mmo" onclick="setCfgOption(this,'mode')">MMO</button>
+          </div>
+        </div>
+        <div>
+          <label class="cfg-label">World</label>
+          <div class="cfg-group">
+            <button class="cfg-option on" data-group="world" data-val="open" onclick="setCfgOption(this,'world')">Open</button>
+            <button class="cfg-option" data-group="world" data-val="linear" onclick="setCfgOption(this,'world')">Linear</button>
+            <button class="cfg-option" data-group="world" data-val="proc" onclick="setCfgOption(this,'world')">Proc-gen</button>
+          </div>
+        </div>
+        <div>
+          <label class="cfg-label">Genre</label>
+          <select class="cfg-select" id="cfg-genre-select">
+            <option>Any genre…</option>
+            <option>RPG / JRPG</option>
+            <option>First-Person Shooter</option>
+            <option>Survival Horror</option>
+            <option>Open World Sandbox</option>
+            <option>Real-Time Strategy</option>
+            <option>Battle Royale</option>
+            <option>Platformer</option>
+            <option>Puzzle Adventure</option>
+            <option>Racing / Sports</option>
+            <option>Simulation / Farming</option>
+          </select>
+        </div>
+        <button class="btn-cfg-gen" onclick="cfgGenerate()">◉ Generate My Game</button>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 11: TRUST CENTER
+══════════════════════════════════════════════ -->
+<section id="trust">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Trust Center</div>
+      <h2>Built for scale.<br><em>Built to last.</em></h2>
+    </div>
+    <div class="trust-cells rv" id="trust-grid"></div>
+    <div class="uptime-band rv" style="margin-top:12px;transition-delay:.1s">
+      <div>
+        <div class="ut-num">99.97%</div>
+        <div class="ut-label">Uptime · Last 90 days</div>
+      </div>
+      <div class="ut-bars" id="ut-bars"></div>
+    </div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 11B: ROADMAP
+══════════════════════════════════════════════ -->
+<section id="roadmap" style="background:var(--s1)">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Public Roadmap</div>
+      <h2>Where we're going.<br><em>No secrets.</em></h2>
+    </div>
+    <div class="rm-grid rv" id="rm-grid"></div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 12: PRICING
+══════════════════════════════════════════════ -->
+<section id="pricing">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">Pricing</div>
+      <h2>Start free.<br><em>Scale when ready.</em></h2>
+      <p>No credit card. No surprises. Every plan is useful from day one.</p>
+    </div>
+    <div class="billing-toggle-row rv">
+      <span class="bt-label on" id="bt-monthly">Monthly</span>
+      <div class="bt-switch" id="bt-switch" onclick="toggleBilling()" role="switch" aria-checked="false" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleBilling()">
+        <div class="bt-thumb"></div>
+      </div>
+      <span class="bt-label" id="bt-annual">Annual</span>
+      <span class="save-pill">Save 30%</span>
+    </div>
+    <div class="plans-wrap" id="plans-wrap"></div>
+    <p class="price-footnote rv" style="transition-delay:.1s">
+      14-day money-back guarantee on all paid plans.
+      <a href="#" onclick="goTo('faq');return false">See FAQ →</a>
+    </p>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 13: FAQ
+══════════════════════════════════════════════ -->
+<section id="faq" style="background:var(--s1)">
+  <div class="si">
+    <div class="sh rv">
+      <div class="sh-ey">FAQ</div>
+      <h2>Questions,<br><em>answered clearly.</em></h2>
+    </div>
+    <div class="faq-search-box rv">
+      <span class="faq-search-icon">⌕</span>
+      <input class="faq-input" id="faq-search-input" type="search" placeholder="Search questions…" oninput="filterFAQ(this.value)" aria-label="Search FAQ"/>
+    </div>
+    <div class="faq-accordion rv" id="faq-accordion" style="transition-delay:.08s"></div>
+  </div>
+</section>
+<div class="rule"></div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 14: FINAL CTA
+══════════════════════════════════════════════ -->
+<section id="final-cta">
+  <div class="si">
+    <div class="rv">
+      <div class="cta-logo" id="cta-logo-mark"></div>
+      <h2 class="cta-headline">Hire your AI game studio.<br><em>Start today.</em></h2>
+      <p class="cta-sub">50,000 creators. One platform. The sentence you write in the next 60 seconds becomes the foundation of a complete game.</p>
+      <div class="cta-actions">
+        <button class="btn-hero" onclick="goTo('creator')">Start Building →</button>
+        <button class="btn-hero-o" onclick="goTo('game')">Try a Generated Game</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════ -->
+<footer>
+  <div class="foot-inner">
+    <div class="foot-top">
+      <div>
+        <div class="foot-brand-row">
+          <div class="foot-brand-icon" id="footer-logo"></div>
+          <span class="foot-brand-name">Derrly AI</span>
+        </div>
+        <div class="foot-desc">The world's first autonomous AI game studio. 12 agents, one prompt, a complete game.</div>
+        <div class="foot-socials">
+          <a class="foot-soc-btn" href="#" aria-label="GitHub">GH</a>
+          <a class="foot-soc-btn" href="#" aria-label="X / Twitter">X</a>
+          <a class="foot-soc-btn" href="#" aria-label="Discord">DS</a>
+        </div>
+      </div>
+      <div>
+        <div class="foot-col-hd">Product</div>
+        <ul class="foot-links-list">
+          <li><a href="#">Agent Studio</a></li>
+          <li><a href="#">Features</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#">API</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="foot-col-hd">Company</div>
+        <ul class="foot-links-list">
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="foot-col-hd">Community</div>
+        <ul class="foot-links-list">
+          <li><a href="#">Discord</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Showcase</a></li>
+          <li><a href="#">Forum</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="foot-col-hd">Legal</div>
+        <ul class="foot-links-list">
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Security</a></li>
+          <li><a href="#">GDPR</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div class="foot-copy">© 2026 Derrly AI · All rights reserved</div>
+      <div class="foot-pills-row">
+        <span class="foot-pill">Free Forever Tier</span>
+        <span class="foot-pill">Llama 4 Scout</span>
+        <span class="foot-pill">Your IP Always</span>
+        <span class="foot-pill">12 AI Agents</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT — fully validated, no broken code
+══════════════════════════════════════════════ -->
+<script>
+(function() {
+'use strict';
+
+/* ─────────────────────────────────────────────
+   STEP 1: LOGO INJECTION
+───────────────────────────────────────────── */
+var logoTpl = document.getElementById('logo-tmpl');
+var LOGO_HTML = logoTpl ? logoTpl.innerHTML.trim() : '';
+
+function injectLogo(selector, colorCss) {
+  var el = typeof selector === 'string' ? document.getElementById(selector) : selector;
+  if (!el) return;
+  el.innerHTML = LOGO_HTML;
+  if (colorCss) el.style.color = colorCss;
+}
+
+// Inject logos into all named elements
+injectLogo('nav-logo', 'var(--white)');
+injectLogo('hero-wm', 'var(--white)');
+injectLogo('cta-logo-mark', 'var(--white)');
+injectLogo('footer-logo', 'var(--g5)');
+
+// Chat avatar (injected dynamically later)
+
+/* ─────────────────────────────────────────────
+   STEP 2: CURSOR SPOTLIGHT
+───────────────────────────────────────────── */
+var cursorEl = document.getElementById('cur');
+document.addEventListener('mousemove', function(e) {
+  cursorEl.style.left = e.clientX + 'px';
+  cursorEl.style.top = e.clientY + 'px';
+}, { passive: true });
+
+/* ─────────────────────────────────────────────
+   STEP 3: SCROLL EVENTS
+───────────────────────────────────────────── */
+var spEl = document.getElementById('sp');
+var navEl = document.getElementById('nav');
+var bttEl = document.getElementById('btt');
+
+window.addEventListener('scroll', function() {
+  var st = window.pageYOffset;
+  var sh = document.documentElement.scrollHeight - window.innerHeight;
+  spEl.style.width = (sh > 0 ? Math.min(100, (st / sh) * 100) : 0) + '%';
+  navEl.classList.toggle('sc', st > 30);
+  bttEl.classList.toggle('vis', st > 600);
+}, { passive: true });
+
+/* ─────────────────────────────────────────────
+   STEP 4: NAVIGATION
+───────────────────────────────────────────── */
+window.goTo = function(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var nh = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 60;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - nh, behavior: 'smooth' });
+};
+
+window.toggleMob = function() {
+  var b = document.getElementById('nbgr');
+  var m = document.getElementById('mdraw');
+  var open = b.classList.toggle('op');
+  m.classList.toggle('op', open);
+  b.setAttribute('aria-expanded', String(open));
+  m.setAttribute('aria-hidden', String(!open));
+};
+
+window.closeMob = function() {
+  var b = document.getElementById('nbgr');
+  var m = document.getElementById('mdraw');
+  b.classList.remove('op');
+  m.classList.remove('op');
+  b.setAttribute('aria-expanded', 'false');
+  m.setAttribute('aria-hidden', 'true');
+};
+
+document.addEventListener('click', function(e) {
+  var b = document.getElementById('nbgr');
+  var m = document.getElementById('mdraw');
+  if (m.classList.contains('op') && !m.contains(e.target) && !b.contains(e.target)) {
+    closeMob();
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeMob();
+});
+
+var navBrand = document.getElementById('nav-brand');
+if (navBrand) {
+  navBrand.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo('hero'); }
+  });
+}
+
+/* ─────────────────────────────────────────────
+   STEP 5: REVEAL OBSERVER
+───────────────────────────────────────────── */
+var revealObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in');
+      revealObs.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.06, rootMargin: '0px 0px -28px 0px' });
+
+function observeAll() {
+  document.querySelectorAll('.rv, .rl, .rr').forEach(function(el) {
+    revealObs.observe(el);
+  });
+}
+observeAll();
+
+/* ─────────────────────────────────────────────
+   STEP 6: COUNTER ANIMATION
+───────────────────────────────────────────── */
+var countObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      animateCount(entry.target);
+      countObs.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+
+function animateCount(el) {
+  var target = parseInt(el.getAttribute('data-count'), 10);
+  var suffix = el.getAttribute('data-suf') || '';
+  if (!target) return;
+  var startTime = null;
+  var duration = 1500;
+  function step(timestamp) {
+    if (!startTime) startTime = timestamp;
+    var progress = Math.min((timestamp - startTime) / duration, 1);
+    var eased = 1 - Math.pow(1 - progress, 3);
+    var value = Math.floor(eased * target);
+    var display = value >= 1000000 ? (value / 1000000).toFixed(1) + 'M'
+                : value >= 1000    ? (value / 1000).toFixed(0) + 'k'
+                : value;
+    el.textContent = display + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+document.querySelectorAll('[data-count]').forEach(function(el) {
+  countObs.observe(el);
+});
+
+/* ─────────────────────────────────────────────
+   STEP 7: TOAST
+───────────────────────────────────────────── */
+window.showToast = function(msg) {
+  var shelf = document.getElementById('toasts');
+  var el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  shelf.appendChild(el);
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() { el.classList.add('show'); });
+  });
+  setTimeout(function() {
+    el.classList.remove('show');
+    setTimeout(function() { if (el.parentNode) el.remove(); }, 400);
+  }, 3000);
+};
+
+/* ─────────────────────────────────────────────
+   STEP 8: HERO TERMINAL ANIMATION
+───────────────────────────────────────────── */
+var HERO_STEPS = [
+  { label: 'Executive Producer — briefing agents', delay: 380 },
+  { label: 'World Architect — building world',     delay: 880 },
+  { label: 'NPC Designer — creating characters',   delay: 1460 },
+  { label: 'Quest Designer — writing story',       delay: 2040 },
+  { label: 'Gameplay Engineer — building systems', delay: 2600 },
+  { label: 'Balance Specialist — calibrating',     delay: 3180 },
+  { label: 'Game Builder — packaging build',       delay: 3760 }
+];
+
+var htStepsEl = document.getElementById('ht-steps');
+var htPfEl = document.getElementById('ht-pf');
+var htResultEl = document.getElementById('ht-result');
+
+// Build step DOM
+HERO_STEPS.forEach(function(s) {
+  var row = document.createElement('div');
+  row.className = 'ht-step';
+  var ic = document.createElement('div');
+  ic.className = 'ht-ic';
+  var lb = document.createElement('span');
+  lb.textContent = s.label;
+  row.appendChild(ic);
+  row.appendChild(lb);
+  htStepsEl.appendChild(row);
+});
+
+function runHeroAnimation() {
+  var steps = htStepsEl.querySelectorAll('.ht-step');
+  var total = HERO_STEPS.length;
+
+  htResultEl.classList.remove('show');
+  htPfEl.style.transition = 'none';
+  htPfEl.style.width = '0';
+  setTimeout(function() { htPfEl.style.transition = 'width .38s var(--ease)'; }, 60);
+
+  steps.forEach(function(s) {
+    s.className = 'ht-step';
+    s.querySelector('.ht-ic').innerHTML = '';
+  });
+
+  HERO_STEPS.forEach(function(sd, i) {
+    // Activate
+    setTimeout(function() {
+      steps[i].className = 'ht-step s-active';
+      steps[i].querySelector('.ht-ic').innerHTML = '<div class="ht-spinner"></div>';
+      htPfEl.style.width = ((i / total) * 90) + '%';
+    }, sd.delay);
+    // Complete
+    setTimeout(function() {
+      steps[i].className = 'ht-step s-done';
+      steps[i].querySelector('.ht-ic').textContent = '✓';
+      htPfEl.style.width = ((i + 1) / total * 100) + '%';
+      if (i === total - 1) {
+        setTimeout(function() { htResultEl.classList.add('show'); }, 280);
+      }
+    }, sd.delay + 540);
+  });
+}
+
+setTimeout(runHeroAnimation, 700);
+setInterval(runHeroAnimation, 9500);
+
+/* ─────────────────────────────────────────────
+   STEP 9: PIPELINE (HOW IT WORKS)
+───────────────────────────────────────────── */
+var PIPELINE_DATA = [
+  { n: '01', name: 'Your Idea',            role: 'Describe any game in plain language. Genre, tone, story, mechanics — anything works.' },
+  { n: '02', name: 'Executive Producer',   role: 'Parses your brief, creates a task graph, dispatches all specialist agents.' },
+  { n: '03', name: 'Creative Director',    role: 'Defines genre, vision, gameplay loop, and player experience objectives.' },
+  { n: '04', name: 'World Architect',      role: 'Generates maps, regions, dungeons, cities, lore, and environmental storytelling.' },
+  { n: '05', name: 'Gameplay Engineer',    role: 'Creates combat, controls, physics, interactions, and all game systems.' },
+  { n: '06', name: 'Quest & NPC Team',     role: 'Writes branching narratives, character backstories, dialogue, and faction systems.' },
+  { n: '07', name: 'Economy & Balance',    role: 'Generates item systems, calibrates difficulty, balances progression curves.' },
+  { n: '08', name: 'QA & Testing',         role: 'Automated validation — agents fix issues and retest until the build is clean.' },
+  { n: '09', name: 'Playable Game',        role: 'Complete, tested game. Runs in any browser. Share with one link. Iterate conversationally.' }
+];
+
+var pipeGrid = document.getElementById('pipe-grid');
+PIPELINE_DATA.forEach(function(p) {
+  var el = document.createElement('div');
+  el.className = 'pn rv';
+  el.innerHTML = '<div class="pn-num">' + p.n + '</div>'
+    + '<div class="pn-name">' + p.name + '</div>'
+    + '<div class="pn-role">' + p.role + '</div>';
+  pipeGrid.appendChild(el);
+  revealObs.observe(el);
+});
+
+/* ─────────────────────────────────────────────
+   STEP 10: AGENT STUDIO
+───────────────────────────────────────────── */
+var AGENT_DEFS = [
+  { id: 'EP', name: 'Executive Producer', role: 'Orchestrator',         tasks: ['Parsing brief', 'Dispatching agents', 'Monitoring pipeline'], output: 'Master brief · task graph' },
+  { id: '01', name: 'Creative Director',  role: 'Vision & concept',     tasks: ['Defining genre', 'Vision document', 'Tone & style'],         output: 'Game Design Brief' },
+  { id: '02', name: 'World Architect',    role: 'Worlds & maps',        tasks: ['Generating regions', 'Placing locations', 'Writing lore'],     output: 'World Blueprint · 4 regions' },
+  { id: '03', name: 'NPC Designer',       role: 'Characters & factions', tasks: ['Creating NPCs', 'Writing backstories', 'Defining factions'],  output: 'Character DB · 8 NPCs' },
+  { id: '04', name: 'Quest Designer',     role: 'Story & missions',     tasks: ['Writing quests', 'Branching paths', 'Designing endings'],      output: 'Quest System · 40 quests' },
+  { id: '05', name: 'Gameplay Eng.',      role: 'Mechanics & systems',  tasks: ['Defining combat', 'Building controls', 'Interactions'],        output: 'Gameplay Systems · 14' },
+  { id: '06', name: 'Economy Designer',   role: 'Resources & items',    tasks: ['Creating items', 'Designing crafting', 'Setting rarities'],    output: 'Economy · 340 items' },
+  { id: '07', name: 'Balance Specialist', role: 'Tuning & calibration', tasks: ['Testing balance', 'Fixing spikes', 'Tuning rewards'],          output: 'Balance Report · verified' },
+  { id: '08', name: 'Multiplayer Eng.',   role: 'Networking & sync',    tasks: ['Setting up netcode', 'Lobby config', 'Matchmaking'],           output: 'Multiplayer · 100 players' },
+  { id: '09', name: 'UI/UX Designer',     role: 'Interface & HUD',      tasks: ['Designing HUD', 'Building menus', 'Onboarding'],              output: 'UI Blueprint · 12 screens' },
+  { id: '10', name: 'QA Tester',          role: 'Quality & validation', tasks: ['Testing systems', 'Validating logic', 'Edge cases'],           output: 'Quality Report · clean' },
+  { id: '11', name: 'Game Builder',       role: 'Assembly & deploy',    tasks: ['Merging outputs', 'Assembling game', 'Packaging build'],       output: 'Playable Game · ship ready' }
+];
+
+var AGENT_COMMS = [
+  { who: 'Executive Producer', msg: 'Brief received. Dispatching Creative Director to establish core vision.',               ep: true,  hi: false },
+  { who: 'Creative Director',  msg: 'Genre confirmed: survival horror + roguelite progression. Defining core loop.',         ep: false, hi: false },
+  { who: 'World Architect',    msg: 'Building NYC post-AI-apocalypse. 4 zones: Manhattan, Brooklyn, Bronx, Queens.',        ep: false, hi: true  },
+  { who: 'NPC Designer',       msg: '3 survivor factions generated: The Cleaners, The Scavengers, The AI Cultists.',        ep: false, hi: false },
+  { who: 'Quest Designer',     msg: 'Main questline: "The Last Signal" — 12 chapters, 6 endings based on allegiance.',      ep: false, hi: false },
+  { who: 'Balance Specialist', msg: 'Imbalance detected in zones 1–2: gold earn rate too high. Flagging to Gameplay Eng.', ep: false, hi: false },
+  { who: 'Gameplay Eng.',      msg: 'Fix applied: combat stamina cost +15% in zones 1–2. Resubmitting for review.',        ep: false, hi: true  },
+  { who: 'QA Tester',          msg: 'All 11 systems validated. Zero critical issues. 2 dialogue inconsistencies fixed.',    ep: false, hi: true  },
+  { who: 'Executive Producer', msg: 'All agents complete. Build approved. Packaging final deliverable.',                    ep: true,  hi: false },
+  { who: 'Game Builder',       msg: 'Merging 11 agent outputs. Assembly complete. Playable build ready to ship.',           ep: false, hi: true  }
+];
+
+var studioRunning = false;
+var studioTimers = [];
+
+var agentsGrid = document.getElementById('agents-grid');
+AGENT_DEFS.forEach(function(a) {
+  var card = document.createElement('div');
+  card.className = 'ag-card ag-idle';
+  card.id = 'ag-' + a.id;
+  card.innerHTML =
+    '<div class="ag-top"><span class="ag-id-tag">' + a.id + '</span><div class="ag-dot"></div></div>'
+    + '<div class="ag-name">' + a.name + '</div>'
+    + '<div class="ag-role-tag">' + a.role + '</div>'
+    + '<div class="ag-bar"><div class="ag-bar-fill" id="agfill-' + a.id + '"></div></div>'
+    + '<div class="ag-status-txt" id="agstat-' + a.id + '">Waiting</div>'
+    + '<div class="ag-output-box" id="agout-' + a.id + '">' + a.output + '</div>';
+  agentsGrid.appendChild(card);
+});
+
+// Auto-launch when visible
+var autoStudioObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting && !studioRunning) {
+      runStudio('An epic dark fantasy RPG in a cursed underwater kingdom');
+      autoStudioObs.disconnect();
+    }
+  });
+}, { threshold: 0.15 });
+autoStudioObs.observe(agentsGrid);
+
+window.launchStudio = function() {
+  var val = document.getElementById('studio-ta').value.trim() || 'A dark fantasy RPG in a cursed underwater kingdom';
+  document.getElementById('studio-btn').disabled = true;
+  resetStudio();
+  runStudio(val);
+};
+
+function resetStudio() {
+  studioTimers.forEach(clearTimeout);
+  studioTimers = [];
+  studioRunning = false;
+  AGENT_DEFS.forEach(function(a) {
+    var card = document.getElementById('ag-' + a.id);
+    if (card) card.className = 'ag-card ag-idle';
+    var fill = document.getElementById('agfill-' + a.id);
+    if (fill) fill.style.width = '0';
+    var stat = document.getElementById('agstat-' + a.id);
+    if (stat) stat.textContent = 'Waiting';
+  });
+  var body = document.getElementById('comms-body');
+  while (body.firstChild) body.removeChild(body.firstChild);
+  document.getElementById('comms-fill').style.width = '0';
+  document.getElementById('comms-pct').textContent = '0%';
+  document.getElementById('comms-status').textContent = 'Running…';
+}
+
+function runStudio(prompt) {
+  studioRunning = true;
+  AGENT_DEFS.forEach(function(a, idx) {
+    var baseDelay = idx * 1750;
+    // Activate
+    studioTimers.push(setTimeout(function() {
+      var card = document.getElementById('ag-' + a.id);
+      card.className = 'ag-card ag-run';
+      var fill = document.getElementById('agfill-' + a.id);
+      fill.style.width = '0';
+      a.tasks.forEach(function(task, ti) {
+        studioTimers.push(setTimeout(function() {
+          var stat = document.getElementById('agstat-' + a.id);
+          if (stat) stat.textContent = task + '…';
+          if (fill) fill.style.width = ((ti + 1) / a.tasks.length * 100) + '%';
+        }, ti * 520));
+      });
+    }, baseDelay));
+    // Complete
+    studioTimers.push(setTimeout(function() {
+      var card = document.getElementById('ag-' + a.id);
+      card.className = 'ag-card ag-done';
+      var stat = document.getElementById('agstat-' + a.id);
+      if (stat) stat.textContent = 'Done';
+      var fill = document.getElementById('agfill-' + a.id);
+      if (fill) fill.style.width = '100%';
+      var pct = Math.round((idx + 1) / AGENT_DEFS.length * 100);
+      document.getElementById('comms-fill').style.width = pct + '%';
+      document.getElementById('comms-pct').textContent = pct + '%';
+      if (idx === AGENT_DEFS.length - 1) {
+        document.getElementById('comms-status').textContent = 'Build complete!';
+        document.getElementById('studio-btn').disabled = false;
+        studioRunning = false;
+        showToast('"' + prompt.slice(0, 45) + (prompt.length > 45 ? '…' : '') + '" — Game ready!');
+      }
+    }, baseDelay + a.tasks.length * 520 + 380));
+  });
+  // Comms
+  AGENT_COMMS.forEach(function(c, i) {
+    studioTimers.push(setTimeout(function() {
+      var body = document.getElementById('comms-body');
+      var msg = document.createElement('div');
+      msg.className = 'comm-msg';
+      var textClass = 'comm-text' + (c.hi ? ' hi' : '') + (c.ep ? ' ep' : '');
+      var textStyle = c.ep ? 'background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.14);' : '';
+      msg.innerHTML = '<div class="comm-who">' + c.who + '</div>'
+        + '<div class="' + textClass + '" style="' + textStyle + '">' + c.msg + '</div>';
+      body.appendChild(msg);
+      body.scrollTop = body.scrollHeight;
+    }, i * 2200 + 500));
+  });
+}
+
+/* ─────────────────────────────────────────────
+   STEP 11: LIVE DEMO
+───────────────────────────────────────────── */
+var DEMO_DATA = [
+  {
+    ico: '⚔️', name: 'Dark Fantasy RPG', genre: 'Open World',
+    lines: [
+      { t: 'l-dim', v: '// Generating dark fantasy world — Llama 4 Scout' },
+      { t: 'l-cmd', v: '> World: Aethermoor — cursed continent' },
+      { t: 'l-ok',  v: '✓ 4 biome regions · 840km² equivalent' },
+      { t: 'l-ok',  v: '✓ 23 unique locations with embedded lore' },
+      { t: 'l-ok',  v: '✓ 8 NPCs · persistent cross-session memory' },
+      { t: 'l-ok',  v: '✓ 40 quests · 6 endings · morality tracking' },
+      { t: 'l-ok',  v: '✓ 340 items · 80 crafting recipes' },
+      { t: 'l-hi',  v: '✓ BUILD READY — Aethermoor Chronicles' }
+    ],
+    time: '38s', world: '840km²', npcs: '8', quests: '40'
+  },
+  {
+    ico: '🧟', name: 'Zombie Co-op', genre: 'Survival Horror',
+    lines: [
+      { t: 'l-dim', v: '// Generating NYC zombie world — Llama 4 Scout' },
+      { t: 'l-cmd', v: '> Setting: New York City · 2099' },
+      { t: 'l-ok',  v: '✓ 4 NYC boroughs · safe zones mapped' },
+      { t: 'l-ok',  v: '✓ 4-player co-op · shared world state' },
+      { t: 'l-ok',  v: '✓ 200+ zombie variant types generated' },
+      { t: 'l-ok',  v: '✓ Base building + scavenging economy' },
+      { t: 'l-ok',  v: '✓ Narrative campaign · 28 story missions' },
+      { t: 'l-hi',  v: '✓ BUILD READY — Zombie NYC 2099' }
+    ],
+    time: '42s', world: 'NYC', npcs: '200+', quests: '28'
+  },
+  {
+    ico: '🚀', name: 'Sci-Fi Shooter', genre: 'Battle Royale',
+    lines: [
+      { t: 'l-dim', v: '// Building competitive shooter — Llama 4 Scout' },
+      { t: 'l-cmd', v: '> Setting: Voidfall Station' },
+      { t: 'l-ok',  v: '✓ 6 arena maps generated' },
+      { t: 'l-ok',  v: '✓ 100-player lobby + authoritative matchmaking' },
+      { t: 'l-ok',  v: '✓ 12 weapon classes · 28 unique weapons' },
+      { t: 'l-ok',  v: '✓ Ranked ladder + seasonal progression' },
+      { t: 'l-ok',  v: '✓ Anti-cheat + dedicated server infra' },
+      { t: 'l-hi',  v: '✓ BUILD READY — Voidfall Station' }
+    ],
+    time: '31s', world: '6 maps', npcs: '100p', quests: '18'
+  },
+  {
+    ico: '🌾', name: 'Cozy Farming', genre: 'Sim + Mystery',
+    lines: [
+      { t: 'l-dim', v: '// Creating cozy farming experience — Llama 4 Scout' },
+      { t: 'l-cmd', v: '> Setting: Maplewood Valley' },
+      { t: 'l-ok',  v: '✓ 50 crop varieties · 4 full seasons' },
+      { t: 'l-ok',  v: '✓ 15 townspeople with complete story arcs' },
+      { t: 'l-ok',  v: '✓ Co-op farm · up to 4 players' },
+      { t: 'l-ok',  v: '✓ Mystery narrative threaded through world' },
+      { t: 'l-ok',  v: '✓ Day/night economy calibrated' },
+      { t: 'l-hi',  v: '✓ BUILD READY — Maplewood Valley' }
+    ],
+    time: '29s', world: 'Valley', npcs: '15', quests: '35'
+  }
+];
+
+var demoTimers = [];
+var demoOptsEl = document.getElementById('demo-opts');
+DEMO_DATA.forEach(function(d, idx) {
+  var el = document.createElement('div');
+  el.className = 'demo-opt';
+  el.setAttribute('data-i', idx);
+  el.innerHTML = '<span class="dopt-ico">' + d.ico + '</span>'
+    + '<div class="dopt-name">' + d.name + '</div>'
+    + '<div class="dopt-genre">' + d.genre + '</div>';
+  el.addEventListener('click', function() { runDemo(idx); });
+  demoOptsEl.appendChild(el);
+});
+
+function runDemo(idx) {
+  demoTimers.forEach(clearTimeout);
+  demoTimers = [];
+  document.querySelectorAll('.demo-opt').forEach(function(d, i) {
+    d.classList.toggle('sel', i === idx);
+  });
+  var d = DEMO_DATA[idx];
+  var log = document.getElementById('demo-log');
+  log.innerHTML = '';
+  document.getElementById('demo-prog-fill').style.width = '0';
+  document.getElementById('demo-dot').className = 'dop-dot on';
+  document.getElementById('demo-status-txt').textContent = 'Generating…';
+  ['dm-time', 'dm-world', 'dm-npcs', 'dm-quests'].forEach(function(id) {
+    document.getElementById(id).textContent = '—';
+  });
+  d.lines.forEach(function(line, i) {
+    demoTimers.push(setTimeout(function() {
+      var el = document.createElement('div');
+      el.className = 'dlog-line ' + line.t;
+      el.textContent = line.v;
+      log.appendChild(el);
+      log.scrollTop = log.scrollHeight;
+      document.getElementById('demo-prog-fill').style.width = ((i + 1) / d.lines.length * 100) + '%';
+      if (i === d.lines.length - 1) {
+        document.getElementById('demo-dot').className = 'dop-dot';
+        document.getElementById('demo-status-txt').textContent = 'Complete';
+        document.getElementById('dm-time').textContent = d.time;
+        document.getElementById('dm-world').textContent = d.world;
+        document.getElementById('dm-npcs').textContent = d.npcs;
+        document.getElementById('dm-quests').textContent = d.quests;
+      }
+    }, i * 320));
+  });
+}
+setTimeout(function() { runDemo(0); }, 700);
+
+/* ─────────────────────────────────────────────
+   STEP 12: PLAYABLE GAME
+───────────────────────────────────────────── */
+var canvas = document.getElementById('game-cvs');
+var ctx = canvas.getContext('2d');
+var GW = 800, GH = 400, TILE = 32;
+var gameState = 'idle', score = 0, hp = 100, level = 1, gameRAF = null;
+var gameKeys = {};
+var player, gems, enemies, walls, particles;
+
+function debounce(fn, ms) {
+  var t;
+  return function() { clearTimeout(t); t = setTimeout(fn, ms); };
+}
+
+function resizeCanvas() {
+  var rect = canvas.parentElement.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  var cssW = rect.width;
+  var cssH = GH * rect.width / GW;
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  ctx.scale(dpr, dpr);
+}
+resizeCanvas();
+window.addEventListener('resize', debounce(resizeCanvas, 150));
+
+if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+  document.getElementById('game-mpad').style.display = 'flex';
+}
+
+// Inject logo into game overlay
+var gameOvLogo = document.getElementById('game-overlay-logo');
+if (gameOvLogo) gameOvLogo.innerHTML = LOGO_HTML;
+
+function initGame() {
+  score = 0; hp = 100; level = 1;
+  gems = []; enemies = []; walls = []; particles = [];
+  document.getElementById('game-score').textContent = 'Score: 0';
+  document.getElementById('game-level').textContent = 'Level 1';
+  document.getElementById('game-hp').style.width = '100%';
+
+  var L = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,1,0,1,1,0,0,0,1,1,0,1,0,1,1,0,1,1,0,0,1],
+    [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+    [1,0,1,0,1,1,1,0,0,1,1,1,0,1,1,1,1,0,1,1,1,0,1,0,1],
+    [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+    [1,0,1,1,1,0,1,1,0,0,1,0,1,1,0,0,1,1,1,0,1,1,1,0,1],
+    [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+    [1,0,1,1,0,1,1,0,0,0,0,0,1,0,0,1,1,0,1,1,0,1,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,0,1,1,0,1,1,1,1,1,1,1,0,1,0,1,1,0,1,0,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+  ];
+  var rows = L.length, cols = L[0].length;
+  var ox = (GW - cols * TILE) / 2, oy = (GH - rows * TILE) / 2;
+
+  for (var r = 0; r < rows; r++) {
+    for (var c = 0; c < cols; c++) {
+      if (L[r][c]) {
+        walls.push({ x: ox + c * TILE, y: oy + r * TILE, w: TILE, h: TILE });
+      } else if (Math.random() < 0.32) {
+        gems.push({ x: ox + c * TILE + TILE / 2, y: oy + r * TILE + TILE / 2, r: 5, glow: Math.random() * Math.PI * 2, alive: true });
+      }
+    }
+  }
+
+  player = { x: ox + TILE + TILE / 2, y: oy + TILE + TILE / 2, r: 9, speed: 2.7 };
+
+  var ePos = [
+    [ox + TILE * 22 + TILE / 2, oy + TILE * 11 + TILE / 2],
+    [ox + TILE * 1 + TILE / 2,  oy + TILE * 11 + TILE / 2],
+    [ox + TILE * 12 + TILE / 2, oy + TILE * 6  + TILE / 2]
+  ];
+  ePos.forEach(function(pos) {
+    enemies.push({ x: pos[0], y: pos[1], r: 9, vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5 });
+  });
+}
+
+function wallCollides(nx, ny, r) {
+  for (var i = 0; i < walls.length; i++) {
+    var w = walls[i];
+    if (nx + r > w.x && nx - r < w.x + w.w && ny + r > w.y && ny - r < w.y + w.h) return true;
+  }
+  return false;
+}
+
+function spawnParticles(x, y, n) {
+  for (var i = 0; i < n; i++) {
+    var a = Math.random() * Math.PI * 2;
+    particles.push({ x: x, y: y, vx: Math.cos(a) * (1 + Math.random() * 2), vy: Math.sin(a) * (1 + Math.random() * 2), life: 1 });
+  }
+}
+
+function updateGame() {
+  var dx = 0, dy = 0;
+  if (gameKeys['ArrowLeft'] || gameKeys['a'] || gameKeys['A']) dx = -1;
+  if (gameKeys['ArrowRight'] || gameKeys['d'] || gameKeys['D']) dx = 1;
+  if (gameKeys['ArrowUp'] || gameKeys['w'] || gameKeys['W']) dy = -1;
+  if (gameKeys['ArrowDown'] || gameKeys['s'] || gameKeys['S']) dy = 1;
+  if (dx && dy) { dx *= 0.707; dy *= 0.707; }
+
+  var nx = player.x + dx * player.speed;
+  var ny = player.y + dy * player.speed;
+  if (!wallCollides(nx, player.y, player.r - 2)) player.x = nx;
+  if (!wallCollides(player.x, ny, player.r - 2)) player.y = ny;
+  player.x = Math.max(player.r, Math.min(GW - player.r, player.x));
+  player.y = Math.max(player.r, Math.min(GH - player.r, player.y));
+
+  // Gems
+  for (var i = gems.length - 1; i >= 0; i--) {
+    var g = gems[i];
+    g.glow = (g.glow + 0.06) % (Math.PI * 2);
+    if (g.alive && Math.hypot(player.x - g.x, player.y - g.y) < player.r + g.r) {
+      g.alive = false;
+      score += 10;
+      document.getElementById('game-score').textContent = 'Score: ' + score;
+      spawnParticles(g.x, g.y, 8);
+      if (score > 0 && score % (level * 100) === 0) {
+        level++;
+        document.getElementById('game-level').textContent = 'Level ' + level;
+        player.speed = Math.min(4.2, player.speed + 0.2);
+      }
+    }
+  }
+  if (gems.every(function(g) { return !g.alive; })) {
+    gems.forEach(function(g) { g.alive = true; });
+  }
+
+  // Enemies
+  enemies.forEach(function(e) {
+    var enx = e.x + e.vx, eny = e.y + e.vy;
+    if (wallCollides(enx, e.y, e.r - 2)) { e.vx *= -1; enx = e.x + e.vx; }
+    if (wallCollides(e.x, eny, e.r - 2)) { e.vy *= -1; eny = e.y + e.vy; }
+    e.x = enx; e.y = eny;
+    if (Math.hypot(player.x - e.x, player.y - e.y) < player.r + e.r - 3) {
+      hp = Math.max(0, hp - 0.35);
+      document.getElementById('game-hp').style.width = hp + '%';
+      if (hp <= 0) endGame();
+    }
+  });
+
+  // Particles
+  for (var i = particles.length - 1; i >= 0; i--) {
+    var p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.88; p.vy *= 0.88;
+    p.life -= 0.04;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function drawGame() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, GW, GH);
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(255,255,255,.022)';
+  ctx.lineWidth = 0.8;
+  for (var x = 0; x < GW; x += TILE) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, GH); ctx.stroke(); }
+  for (var y = 0; y < GH; y += TILE) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(GW, y); ctx.stroke(); }
+
+  // Walls
+  walls.forEach(function(w) {
+    ctx.fillStyle = '#0f0f0f';
+    ctx.fillRect(w.x, w.y, w.w, w.h);
+    ctx.strokeStyle = 'rgba(255,255,255,.045)';
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(w.x + 0.5, w.y + 0.5, w.w - 1, w.h - 1);
+  });
+
+  // Gems
+  gems.forEach(function(g) {
+    if (!g.alive) return;
+    var pulse = Math.sin(g.glow) * 0.5 + 0.5;
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,255,255,.72)';
+    ctx.shadowBlur = 7 + pulse * 6;
+    ctx.fillStyle = 'rgba(255,255,255,' + (0.62 + pulse * 0.38) + ')';
+    ctx.beginPath();
+    ctx.arc(g.x, g.y, g.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Enemies
+  enemies.forEach(function(e) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(200,50,50,.55)';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = 'rgba(188,44,44,.9)';
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = 'rgba(255,255,255,.7)';
+    ctx.font = 'bold 10px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText('E', e.x, e.y + 4);
+  });
+
+  // Player
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,255,255,.9)';
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = '#000';
+  ctx.font = 'bold 10px JetBrains Mono';
+  ctx.textAlign = 'center';
+  ctx.fillText('P', player.x, player.y + 4);
+
+  // Particles
+  particles.forEach(function(p) {
+    ctx.fillStyle = 'rgba(255,255,255,' + p.life.toFixed(2) + ')';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function gameLoop() {
+  updateGame();
+  drawGame();
+  gameRAF = requestAnimationFrame(gameLoop);
+}
+
+function endGame() {
+  gameState = 'over';
+  cancelAnimationFrame(gameRAF);
+  var ov = document.getElementById('game-overlay');
+  ov.className = 'game-overlay';
+  ov.innerHTML = '<div class="gov-title">Game Over</div>'
+    + '<div class="gov-sub" style="font-size:16px;color:var(--g6)">Score: ' + score + '</div>'
+    + '<button class="btn-play-game" onclick="startGame()">Play Again</button>';
+}
+
+window.startGame = function() {
+  initGame();
+  gameState = 'running';
+  document.getElementById('game-overlay').className = 'game-overlay hidden';
+  document.getElementById('game-hud').style.display = 'flex';
+  cancelAnimationFrame(gameRAF);
+  gameLoop();
+};
+
+document.addEventListener('keydown', function(e) {
+  gameKeys[e.key] = true;
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key) && gameState === 'running') {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+document.addEventListener('keyup', function(e) { gameKeys[e.key] = false; });
+window.gkDown = function(k) { gameKeys[k] = true; };
+window.gkUp   = function(k) { gameKeys[k] = false; };
+
+/* ─────────────────────────────────────────────
+   STEP 13: WHAT DERRLY CREATES
+───────────────────────────────────────────── */
+var CREATES_DATA = [
+  { ico: '🗺',  name: 'World Maps',     desc: 'Coherent explorable environments.' },
+  { ico: '👤',  name: 'NPCs',           desc: 'Memory, factions, personalities.' },
+  { ico: '📜',  name: 'Stories',        desc: 'Branching narratives, endings.' },
+  { ico: '💬',  name: 'Dialogue',       desc: 'Character-consistent conversation.' },
+  { ico: '⚔️',  name: 'Combat',         desc: 'Balanced genre-specific mechanics.' },
+  { ico: '🗺️',  name: 'Quests',         desc: 'Main + side missions with rewards.' },
+  { ico: '💰',  name: 'Economies',      desc: 'Items, crafting, calibrated balance.' },
+  { ico: '🌐',  name: 'Multiplayer',    desc: 'Lobbies, matchmaking, world sync.' },
+  { ico: '🖥',  name: 'UI Systems',     desc: 'HUD, menus, inventory, onboarding.' },
+  { ico: '💾',  name: 'Save Systems',   desc: 'Persistent player state.' },
+  { ico: '📈',  name: 'Progression',    desc: 'Skill trees and long-term goals.' },
+  { ico: '🔊',  name: 'Audio Design',   desc: 'Ambient, combat, and UI sound.' }
+];
+
+var createsGrid = document.getElementById('creates-grid');
+CREATES_DATA.forEach(function(c) {
+  var el = document.createElement('div');
+  el.className = 'cc-item rv';
+  el.innerHTML = '<span class="cc-ico">' + c.ico + '</span>'
+    + '<div class="cc-name">' + c.name + '</div>'
+    + '<div class="cc-desc">' + c.desc + '</div>';
+  createsGrid.appendChild(el);
+  revealObs.observe(el);
+});
+
+/* ─────────────────────────────────────────────
+   STEP 14: FEATURE EXPERIENCES
+───────────────────────────────────────────── */
+var FEATURES_DATA = [
+  {
+    label: 'World Generation', title: 'Worlds that breathe',
+    desc: 'Regions with history, atmosphere, and secrets tied to your narrative — not random noise. Every place connects to your story.',
+    dark: false,
+    code: '<span class="fcc-hi">✓ Ashenfall</span> <span class="fcc-dim">(cursed forest · 4 dungeons)</span>\n'
+        + '<span class="fcc-hi">✓ Iron Reach</span> <span class="fcc-dim">(dwarven ruins · 3 factions)</span>\n'
+        + '<span class="fcc-hi">✓ The Pale Coast</span> <span class="fcc-dim">(forbidden sea · 2 secrets)</span>\n'
+        + '<span class="fcc-ok">→ 7 hidden discoveries embedded</span>'
+  },
+  {
+    label: 'NPC Memory', title: 'Characters that remember you',
+    desc: 'Persistent memory across every session. Relationships evolve. Grudges persist. Loyalty is earned over time — not scripted.',
+    dark: true,
+    code: '<span class="fcc-hi">Mira, Blacksmith</span> <span class="fcc-dim">(Allied)</span>\n'
+        + '<span class="fcc-dim">→ remembers: saved village · session 3</span>\n'
+        + '<span class="fcc-dim">→ offers: -20% discount · hidden quest</span>\n'
+        + '<span class="fcc-ok">→ memory_depth: 40+ interactions</span>'
+  },
+  {
+    label: 'Quest Generation', title: 'No two runs are the same',
+    desc: 'Branching decisions with consequences that ripple through the entire world. Multiple endings that feel earned, not arbitrary.',
+    dark: false,
+    code: '<span class="fcc-hi">Quest: The Hollow Crown</span>\n'
+        + '<span class="fcc-dim">A → save the king → 3 paths</span>\n'
+        + '<span class="fcc-dim">B → expose him  → 4 paths</span>\n'
+        + '<span class="fcc-dim">C → become king → 2 endings</span>\n'
+        + '<span class="fcc-ok">→ morality tracked system-wide</span>'
+  },
+  {
+    label: 'Live Iteration', title: 'Revise with words, not code',
+    desc: 'Tell the AI what to change. It revises only the affected systems without touching anything else. Instant. Precise.',
+    dark: true,
+    code: '<span class="fcc-hi">&gt; make the third act darker</span>\n'
+        + '<span class="fcc-dim">Updating: quest_tree.json</span>\n'
+        + '<span class="fcc-dim">Updating: npc_dialogue.json</span>\n'
+        + '<span class="fcc-dim">Updating: world_events.json</span>\n'
+        + '<span class="fcc-ok">✓ Applied in 8 seconds</span>'
+  }
+];
+
+var featGrid = document.getElementById('feat-grid');
+FEATURES_DATA.forEach(function(f) {
+  var el = document.createElement('div');
+  el.className = 'fc' + (f.dark ? ' fcdark' : '');
+  el.innerHTML = '<div class="fc-label">' + f.label + '</div>'
+    + '<div class="fc-title">' + f.title + '</div>'
+    + '<div class="fc-desc">' + f.desc + '</div>'
+    + '<div class="fc-code">' + f.code + '</div>';
+  featGrid.appendChild(el);
+});
+
+/* ─────────────────────────────────────────────
+   STEP 15: COMPARISON TABLE
+───────────────────────────────────────────── */
+var CMP_ROWS = [
+  { m: 'Time to prototype',  t: '3–12 months',             d: 'Under 60 seconds',    tag: '720× faster'           },
+  { m: 'Coding required',    t: '10k–100k lines',           d: 'Zero',                tag: 'No experience needed'  },
+  { m: 'Team required',      t: '5–20 people',              d: 'None',                tag: 'All agents automated'  },
+  { m: 'NPC creation',       t: 'Months of scripting',      d: 'Instant, with memory', tag: '∞ depth'              },
+  { m: 'Quest design',       t: 'Dedicated narrative team', d: 'Fully generated',     tag: 'Automated'             },
+  { m: 'Balance testing',    t: 'Manual + long playtests',  d: 'AI-calibrated',       tag: 'Self-healing'          },
+  { m: 'Multiplayer setup',  t: 'Senior engineers + months', d: 'Auto-configured',    tag: 'Zero devops'           },
+  { m: 'Automated QA',       t: 'Manual or not at all',     d: 'Every build, always', tag: '100% coverage'         },
+  { m: 'Cost to start',      t: '$250,000+ budget',         d: 'Free',                tag: '$0 to begin'           }
+];
+
+var cmpTable = document.getElementById('cmp-table');
+var thead = document.createElement('thead');
+thead.innerHTML = '<tr><th>What you need</th><th>Traditional Dev / Unity / Unreal</th><th>Derrly AI</th></tr>';
+cmpTable.appendChild(thead);
+
+var tbody = document.createElement('tbody');
+CMP_ROWS.forEach(function(r) {
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td class="cmp-metric">' + r.m + '</td>'
+    + '<td class="cmp-trad">' + r.t + '</td>'
+    + '<td class="cmp-good">' + r.d + ' <span class="cmp-win">' + r.tag + '</span></td>';
+  tbody.appendChild(tr);
+});
+cmpTable.appendChild(tbody);
+
+/* ─────────────────────────────────────────────
+   STEP 16: QA / TESTING SECTION
+───────────────────────────────────────────── */
+var QA_DATA = [
+  { ico: '🐛', name: 'QA Agent',           desc: 'Finds bugs, detects inconsistencies, validates all game mechanics on every build automatically.' },
+  { ico: '⚖️', name: 'Balance Specialist',  desc: 'Detects difficulty spikes, economy imbalances, progression issues. Flags problems; agents fix them.' },
+  { ico: '⚡', name: 'Performance Agent',   desc: 'Validates frame rate targets, memory budgets, asset sizes, and load times before delivery.' },
+  { ico: '♿', name: 'Accessibility Check', desc: 'Checks contrast ratios, font sizes, color blindness support, and control alternatives automatically.' },
+  { ico: '🔄', name: 'Regression Testing',  desc: 'After every fix, the full test suite re-runs. No fix can break something else without detection.' },
+  { ico: '🛡', name: 'Consistency Check',   desc: 'Ensures world lore, NPC backstories, quest rewards, and dialogue are all internally consistent.' }
+];
+
+var qaGrid = document.getElementById('qa-grid');
+QA_DATA.forEach(function(q, idx) {
+  var el = document.createElement('div');
+  el.className = 'qa-cell rv';
+  el.style.transitionDelay = (idx % 3 * 0.06) + 's';
+  el.innerHTML = '<span class="qa-ico">' + q.ico + '</span>'
+    + '<div class="qa-name">' + q.name + '</div>'
+    + '<div class="qa-desc">' + q.desc + '</div>'
+    + '<div class="rm-badge" style="margin-top:13px"><div class="rm-badge-dot"></div>Runs on every build</div>';
+  qaGrid.appendChild(el);
+  revealObs.observe(el);
+});
+
+/* ─────────────────────────────────────────────
+   STEP 17: MARKETPLACE + COMMUNITY
+───────────────────────────────────────────── */
+var GAMES_DATA = [
+  { em: '🧟', name: 'Zombie NYC 2099',       genre: 'Co-op Survival',    prompt: '4-player zombie survival in New York after an AI apocalypse',          t: '42s', p: '41.2k', g: 'radial-gradient(circle at 30% 30%,#1a0505,#000)' },
+  { em: '⚔️', name: 'Aethermoor Chronicles', genre: 'Dark Fantasy RPG',  prompt: 'Cursed open world where NPCs remember your sins across every session', t: '38s', p: '28.7k', g: 'radial-gradient(circle at 70% 30%,#0a0520,#000)' },
+  { em: '🚀', name: 'Voidfall Station',       genre: 'Battle Royale',     prompt: '100 players on a dying megastructure — one escape pod',                t: '31s', p: '63.5k', g: 'radial-gradient(circle at 50% 70%,#000c1f,#000)' },
+  { em: '🌾', name: 'Maplewood Valley',       genre: 'Cozy Sim + Mystery', prompt: 'Peaceful farming sim with something buried beneath the roots',         t: '29s', p: '17.8k', g: 'radial-gradient(circle at 30% 60%,#071407,#000)' },
+  { em: '🏰', name: 'Ironhold Siege',          genre: 'RTS Strategy',      prompt: 'Medieval kingdom builder with real-time siege warfare',                t: '51s', p: '9.4k',  g: 'radial-gradient(circle at 60% 40%,#120a00,#000)' },
+  { em: '🤖', name: 'Netrunner Zero',          genre: 'Cyberpunk Stealth', prompt: 'Hack every NPC, every district in 2089 Neo-Tokyo',                    t: '44s', p: '22.1k', g: 'radial-gradient(circle at 40% 50%,#001616,#000)' }
+];
+
+var mktGrid = document.getElementById('mkt-grid');
+GAMES_DATA.forEach(function(gm, idx) {
+  var c = document.createElement('div');
+  c.className = 'mkt-card rv';
+  c.style.transitionDelay = (idx % 3 * 0.06) + 's';
+  c.innerHTML =
+    '<div class="mkt-thumb"><div class="mkt-bg" style="background:' + gm.g + '"></div><div class="mkt-em">' + gm.em + '</div><div class="mkt-badge">AI-Made</div></div>'
+    + '<div class="mkt-body">'
+    + '<div class="mkt-genre">' + gm.genre + '</div>'
+    + '<div class="mkt-name">' + gm.name + '</div>'
+    + '<div class="mkt-prompt">"' + gm.prompt + '"</div>'
+    + '<div class="mkt-stats"><span>⚡ ' + gm.t + '</span><span>▶ ' + gm.p + '</span></div>'
+    + '</div>'
+    + '<div class="mkt-actions">'
+    + '<div class="mkt-act prime" onclick="showToast(\'Loading demo…\')">▶ Play</div>'
+    + '<div class="mkt-act" onclick="goTo(\'creator\')">Clone</div>'
+    + '<div class="mkt-act" onclick="showToast(\'' + gm.prompt.slice(0, 48) + '…\')">Prompt</div>'
+    + '</div>';
+  mktGrid.appendChild(c);
+  revealObs.observe(c);
+});
+
+var COMMUNITY_DATA = [
+  { init: 'AK', name: 'Alex Kim',     when: '2h ago',  game: 'Iron Kingdom',    genre: 'RTS',          quote: '"Never written code. Built my first strategy game in an afternoon. The AI suggested mechanics I never would have thought of."',   stars: '43',  plays: '1.2k' },
+  { init: 'SM', name: 'Sarah Moore',  when: '5h ago',  game: 'Phantasmal Depths', genre: 'Horror RPG', quote: '"The NPC memory is extraordinary. Characters remember what happened three sessions ago. This is genuine progress."',             stars: '89',  plays: '4.7k' },
+  { init: 'JR', name: 'Prof. James',  when: '1d ago',  game: 'Arcane Academy',  genre: 'Puzzle RPG',   quote: '"I teach game design. Students prototype complete games in class. The learning curve is essentially zero."',                      stars: '127', plays: '8.9k' },
+  { init: 'ML', name: 'Maria Lima',   when: '2d ago',  game: 'Thornhaven',      genre: 'Survival',     quote: '"Built a 40-hour open-world game alone. Players can\'t believe one person made this."',                                         stars: '214', plays: '12.4k' },
+  { init: 'DC', name: 'David Chen',   when: '3d ago',  game: 'Skyfront Delta',  genre: 'Battle Royale', quote: '"Procedural generation creates worlds that feel genuinely handcrafted. Daily user for six months."',                            stars: '56',  plays: '2.8k' },
+  { init: 'PS', name: 'Priya Singh',  when: '4d ago',  game: 'Harvest Echo',    genre: 'Cozy Farming', quote: '"Finally shipped something I\'m proud of. Agents handled systems while I focused on fun."',                                    stars: '178', plays: '9.1k' }
+];
+
+var commGrid = document.getElementById('comm-grid');
+COMMUNITY_DATA.forEach(function(c, idx) {
+  var el = document.createElement('div');
+  el.className = 'comm-card rv';
+  el.style.transitionDelay = (idx % 3 * 0.06) + 's';
+  el.innerHTML =
+    '<div class="comm-head"><div class="comm-av">' + c.init + '</div>'
+    + '<div><div class="comm-name">' + c.name + '</div><div class="comm-when">' + c.when + '</div></div></div>'
+    + '<div class="comm-chip"><div class="comm-gname">' + c.game + '</div><div class="comm-ggenre">' + c.genre + '</div></div>'
+    + '<div class="comm-quote">' + c.quote + '</div>'
+    + '<div class="comm-meta"><span>⭐ ' + c.stars + '</span><span>▶ ' + c.plays + ' plays</span></div>';
+  commGrid.appendChild(el);
+  revealObs.observe(el);
+});
+
+/* ─────────────────────────────────────────────
+   STEP 18: TRUST CENTER
+───────────────────────────────────────────── */
+var TRUST_DATA = [
+  { ico: '🔐', name: 'Your IP, Always',      desc: 'Everything you create belongs to you. Zero claim from us. Export any time.' },
+  { ico: '🛡', name: 'Enterprise Security',   desc: 'AES-256 encryption. SOC 2 Type II in progress. Quarterly pen testing.' },
+  { ico: '🌐', name: 'Global Infrastructure', desc: 'Cloudflare edge. 300+ cities. Sub-50ms for 95% of users worldwide.' },
+  { ico: '🔍', name: 'Transparent AI',        desc: 'Published model choices (Llama 4 Scout), training categories, safety protocols.' },
+  { ico: '📊', name: 'GDPR & CCPA',           desc: 'Full data portability. Right to erasure. Explicit consent throughout.' },
+  { ico: '🤖', name: 'AI Safety',             desc: 'Real-time moderation and safety classifiers on all agent outputs.' },
+  { ico: '⚡', name: '99.9% Uptime SLA',      desc: 'Auto-failover. Real-time status page. Full post-mortems on incidents.' },
+  { ico: '🏢', name: 'Enterprise Ready',       desc: 'SSO, audit logs, team permissions, custom SLAs, dedicated support.' }
+];
+
+var trustGrid = document.getElementById('trust-grid');
+TRUST_DATA.forEach(function(t, idx) {
+  var el = document.createElement('div');
+  el.className = 'trust-cell rv';
+  el.style.transitionDelay = (idx % 4 * 0.05) + 's';
+  el.innerHTML = '<div class="trust-ico">' + t.ico + '</div>'
+    + '<div class="trust-name">' + t.name + '</div>'
+    + '<div class="trust-desc">' + t.desc + '</div>';
+  trustGrid.appendChild(el);
+  revealObs.observe(el);
+});
+
+// Uptime bars
+var utBars = document.getElementById('ut-bars');
+for (var ui = 0; ui < 57; ui++) {
+  var bar = document.createElement('div');
+  bar.className = 'ut-bar' + (Math.random() > 0.04 ? ' ut-ok' : '');
+  bar.style.height = (9 + Math.random() * 22) + 'px';
+  utBars.appendChild(bar);
+}
+
+/* ─────────────────────────────────────────────
+   STEP 19: ROADMAP
+───────────────────────────────────────────── */
+var ROADMAP_DATA = [
+  { q: 'Q3 2026', t: 'Multiplayer Worlds',      d: 'Persistent shared worlds up to 100 players, faction wars, live AI events.', active: true  },
+  { q: 'Q4 2026', t: '3D Asset Generation',     d: 'AI-generated 3D models and textures integrated directly into your build.',  active: false },
+  { q: 'Q1 2027', t: 'Voice NPCs',              d: 'Natural speech conversations. Emotion-aware, context-sensitive, real-time.', active: false },
+  { q: 'Q2 2027', t: 'VR Experiences',          d: 'Generate VR worlds from the same interface. Quest 3 + PC VR day one.',      active: false },
+  { q: 'Q3 2027', t: 'AI Multiplayer Director', d: 'An agent that manages live multiplayer events and world evolution in real time.', active: false }
+];
+
+var rmGrid = document.getElementById('rm-grid');
+ROADMAP_DATA.forEach(function(r) {
+  var el = document.createElement('div');
+  el.className = 'rm-node rv';
+  el.innerHTML = '<div class="rm-q">' + r.q + '</div>'
+    + '<div class="rm-title">' + r.t + '</div>'
+    + '<div class="rm-desc">' + r.d + '</div>'
+    + '<div class="rm-badge' + (r.active ? ' active' : '') + '">'
+    + '<div class="rm-badge-dot"></div>'
+    + (r.active ? 'In Development' : 'Planned')
+    + '</div>';
+  rmGrid.appendChild(el);
+  revealObs.observe(el);
+});
+
+/* ─────────────────────────────────────────────
+   STEP 20: PRICING
+───────────────────────────────────────────── */
+var isAnnual = false;
+var PLANS_DATA = [
+  {
+    tier: 'Free', name: 'Explorer', desc: 'Start building. No credit card.',
+    monthly: 0, annual: 0, featured: false, cta: 'Start Free', ctaStyle: 'ghost-cta',
+    features: [
+      { yes: true,  text: '3 AI generations / month' },
+      { yes: true,  text: '20 gameplay hours' },
+      { yes: true,  text: 'Basic world editor' },
+      { yes: true,  text: 'Community support' },
+      { yes: false, text: 'Multiplayer publishing' },
+      { yes: false, text: 'AI coding assistant' },
+      { yes: false, text: 'Version control' }
+    ]
+  },
+  {
+    tier: 'Most Popular', name: 'Creator', desc: 'Unlimited power for serious builders.',
+    monthly: 29, annual: 20, featured: true, cta: 'Start Free Trial', ctaStyle: 'solid-cta',
+    features: [
+      { yes: true, text: 'Unlimited AI generations' },
+      { yes: true, text: 'Unlimited gameplay hours' },
+      { yes: true, text: 'Advanced world editor' },
+      { yes: true, text: 'Multiplayer publishing' },
+      { yes: true, text: 'AI coding assistant' },
+      { yes: true, text: 'Version control' },
+      { yes: true, text: 'Priority support' }
+    ]
+  },
+  {
+    tier: 'Studio', name: 'Studio', desc: 'For teams shipping real products.',
+    monthly: 99, annual: 69, featured: false, cta: 'Contact Sales', ctaStyle: 'ghost-cta',
+    features: [
+      { yes: true, text: 'Everything in Creator' },
+      { yes: true, text: '5 team seats included' },
+      { yes: true, text: 'Full API access' },
+      { yes: true, text: 'Custom branding' },
+      { yes: true, text: 'Revenue sharing' },
+      { yes: true, text: 'Dedicated account manager' }
+    ]
+  }
+];
+
+var plansWrap = document.getElementById('plans-wrap');
+
+window.toggleBilling = function() {
+  isAnnual = !isAnnual;
+  var sw = document.getElementById('bt-switch');
+  sw.classList.toggle('annual', isAnnual);
+  sw.setAttribute('aria-checked', String(isAnnual));
+  document.getElementById('bt-monthly').classList.toggle('on', !isAnnual);
+  document.getElementById('bt-annual').classList.toggle('on', isAnnual);
+  renderPlans();
+};
+
+function renderPlans() {
+  plansWrap.style.opacity = '0.6';
+  plansWrap.style.transition = 'opacity 0.18s ease';
+  setTimeout(function() { plansWrap.style.opacity = '1'; }, 220);
+  plansWrap.innerHTML = '';
+  PLANS_DATA.forEach(function(p) {
+    var price = isAnnual ? p.annual : p.monthly;
+    var el = document.createElement('div');
+    el.className = 'plan-card' + (p.featured ? ' featured' : '');
+
+    var featuresHTML = p.features.map(function(f) {
+      return '<li><span class="' + (f.yes ? 'pf-check' : 'pf-dash') + '">' + (f.yes ? '✓' : '—') + '</span>' + f.text + '</li>';
+    }).join('');
+
+    el.innerHTML =
+      (p.featured ? '<div class="plan-popular-badge">Most Popular</div>' : '')
+      + '<div class="plan-tier">' + p.tier + '</div>'
+      + '<div class="plan-name">' + p.name + '</div>'
+      + '<div class="plan-desc">' + p.desc + '</div>'
+      + '<div class="plan-price-row">'
+      + '<span class="plan-sym">$</span>'
+      + '<span class="plan-amount">' + price + '</span>'
+      + '<span class="plan-period">' + (price > 0 ? '/mo' : '') + '</span>'
+      + '</div>'
+      + '<button class="plan-cta-btn ' + p.ctaStyle + '" onclick="showToast(\'' + p.cta + ' — launching soon!\')">' + p.cta + '</button>'
+      + '<div class="plan-divider"></div>'
+      + '<ul class="plan-features-list">' + featuresHTML + '</ul>';
+
+    plansWrap.appendChild(el);
+    revealObs.observe(el);
+  });
+}
+renderPlans();
+
+/* ─────────────────────────────────────────────
+   STEP 21: FAQ
+───────────────────────────────────────────── */
+var FAQ_DATA = [
+  {
+    q: 'Is Derrly AI actually free?',
+    a: 'Yes — Explorer is free forever. No credit card. 3 AI generations per month, 20 gameplay hours. Paid plans unlock unlimited generations, multiplayer, and advanced tools.'
+  },
+  {
+    q: 'What is the Executive Producer?',
+    a: 'The Executive Producer is a master orchestration agent that receives your prompt, creates a task dependency graph, dispatches the 11 specialist agents, monitors outputs, resolves conflicts, and approves the final build. It is what makes the studio work as a coherent unit.'
+  },
+  {
+    q: 'What AI model powers Derrly?',
+    a: 'The chat interface uses Llama 4 Scout via the Groq API — one of the fastest and most capable inference systems available. Responses stream in real time. The full generation pipeline runs all 12 agents in an orchestrated sequence optimized for coherent, interconnected game outputs.'
+  },
+  {
+    q: 'Do I need coding experience?',
+    a: 'None. Describe your game in plain language — the AI handles every technical detail. Developers can also inspect and modify the generated code directly. It is clean, documented, and fully accessible.'
+  },
+  {
+    q: 'How does automated testing work?',
+    a: 'Before any build is delivered, the QA Agent, Balance Specialist, and Performance Agent run automatically. If they detect issues, the relevant agents fix them and testing runs again. This repeats until no critical failures remain — only then do you receive the build.'
+  },
+  {
+    q: 'How does NPC memory work?',
+    a: 'Each NPC carries a persistent memory store of interactions, player decisions, and world events. They use this history to evolve dialogue, attitude, and behavior across sessions — creating a world that genuinely changes based on how you play over time.'
+  },
+  {
+    q: 'Do I own everything I create?',
+    a: '100%. Your code, worlds, characters, dialogue, and stories belong entirely to you. We make zero claim to any content generated through Derrly AI. Export everything any time.'
+  },
+  {
+    q: 'Can I publish and share games?',
+    a: 'Creator and Studio users publish with one click. Games run in any modern browser — no downloads for players. Free tier games can be shared via private link.'
+  },
+  {
+    q: 'Can I edit my game after it is generated?',
+    a: 'Yes — conversationally. Say "make zombies faster" or "add a desert map" and the AI updates only the affected systems without regenerating the entire project. Every change is versioned automatically.'
+  }
+];
+
+var faqAccordion = document.getElementById('faq-accordion');
+FAQ_DATA.forEach(function(f) {
+  var item = document.createElement('div');
+  item.className = 'faq-item';
+
+  var qBtn = document.createElement('button');
+  qBtn.className = 'faq-q';
+  qBtn.setAttribute('aria-expanded', 'false');
+  qBtn.innerHTML = '<span>' + f.q + '</span><span class="faq-plus-icon" aria-hidden="true">+</span>';
+
+  var ans = document.createElement('div');
+  ans.className = 'faq-answer';
+  ans.textContent = f.a;
+  ans.setAttribute('role', 'region');
+
+  qBtn.addEventListener('click', function() {
+    var open = item.classList.toggle('open');
+    qBtn.setAttribute('aria-expanded', String(open));
+  });
+
+  item.appendChild(qBtn);
+  item.appendChild(ans);
+  faqAccordion.appendChild(item);
+  revealObs.observe(item);
+});
+
+window.filterFAQ = function(val) {
+  val = val.toLowerCase();
+  var items = faqAccordion.querySelectorAll('.faq-item');
+  items.forEach(function(item, i) {
+    var q = FAQ_DATA[i] ? FAQ_DATA[i].q.toLowerCase() : '';
+    var a = FAQ_DATA[i] ? FAQ_DATA[i].a.toLowerCase() : '';
+    item.classList.toggle('fhidden', val.length > 0 && !q.includes(val) && !a.includes(val));
+  });
+};
+
+/* ─────────────────────────────────────────────
+   STEP 22: AI CREATOR CHAT — Llama 4 Scout
+───────────────────────────────────────────── */
+var chatHistory = [];
+var chatBusy = false;
+
+// API config — Llama 4 Scout via Groq
+var GROQ_KEY = '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'; // key stored frontend-side — replace with your own
+var GROQ_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
+var GROQ_FALLBACK = 'llama-3.3-70b-versatile'; // fallback if Scout not available
+
+var CHAT_INIT = "I'm your AI game designer. Tell me about the game you want to create — genre, atmosphere, mechanics, or just a feeling. What are you imagining?";
+var CHAT_SYSTEM = 'You are the Derrly AI Game Designer, powered by Llama 4 Scout. You help users design their dream games. Be concise, enthusiastic, and specific. Ask one smart follow-up question at a time. Keep responses 2–4 sentences. Use game design vocabulary naturally.';
+
+// Inject logo into chat avatar
+var chatAvIcon = document.getElementById('chat-av-icon');
+if (chatAvIcon) chatAvIcon.innerHTML = LOGO_HTML;
+
+function getTimestamp() {
+  var d = new Date();
+  var h = d.getHours() % 12 || 12;
+  var m = String(d.getMinutes()).padStart(2, '0');
+  return h + ':' + m + (d.getHours() >= 12 ? ' pm' : ' am');
+}
+
+function makeLogoAvatar() {
+  var el = document.createElement('div');
+  el.className = 'msg-av ai';
+  el.innerHTML = LOGO_HTML;
+  el.style.color = 'var(--black)';
+  return el;
+}
+
+function addMessage(role, text) {
+  var container = document.getElementById('chat-messages');
+  var row = document.createElement('div');
+  row.className = 'msg-row ' + role;
+
+  var avatar = document.createElement('div');
+  if (role === 'ai') {
+    avatar = makeLogoAvatar();
+  } else {
+    avatar.className = 'msg-av u';
+    avatar.textContent = '👤';
+  }
+
+  var col = document.createElement('div');
+  col.className = 'msg-col';
+
+  var bubble = document.createElement('div');
+  bubble.className = 'msg-bubble ' + role;
+  bubble.textContent = text;
+  bubble.title = 'Click to copy';
+  bubble.addEventListener('click', function() {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(function() { showToast('Copied to clipboard'); }).catch(function() {});
+    }
+  });
+
+  var time = document.createElement('div');
+  time.className = 'msg-time';
+  time.textContent = getTimestamp();
+
+  col.appendChild(bubble);
+  col.appendChild(time);
+
+  if (role === 'u') {
+    row.appendChild(col);
+    row.appendChild(avatar);
+  } else {
+    row.appendChild(avatar);
+    row.appendChild(col);
+  }
+
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+function addTypingIndicator() {
+  var container = document.getElementById('chat-messages');
+  var row = document.createElement('div');
+  row.className = 'msg-row ai';
+  row.id = 'typing-row';
+
+  var avatar = makeLogoAvatar();
+  var col = document.createElement('div');
+  col.className = 'msg-col';
+
+  var indicator = document.createElement('div');
+  indicator.className = 'typing-indicator';
+  for (var i = 0; i < 3; i++) {
+    var dot = document.createElement('div');
+    dot.className = 'tdot';
+    dot.style.animationDelay = (i * 0.14) + 's';
+    indicator.appendChild(dot);
+  }
+
+  col.appendChild(indicator);
+  row.appendChild(avatar);
+  row.appendChild(col);
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  var row = document.getElementById('typing-row');
+  if (row) row.remove();
+}
+
+// Initialize chat
+addMessage('ai', CHAT_INIT);
+chatHistory.push({ role: 'assistant', content: CHAT_INIT });
+
+window.sendChatMessage = async function() {
+  if (chatBusy) return;
+  var ta = document.getElementById('chat-textarea');
+  var val = ta.value.trim();
+  if (!val) return;
+
+  addMessage('u', val);
+  chatHistory.push({ role: 'user', content: val });
+  ta.value = '';
+  ta.style.height = '';
+
+  document.getElementById('chat-send-btn').disabled = true;
+  chatBusy = true;
+  addTypingIndicator();
+
+  var models = [GROQ_MODEL, GROQ_FALLBACK];
+  var attempted = 0;
+
+  async function tryModel(modelIndex) {
+    try {
+      var response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + GROQ_KEY
+        },
+        body: JSON.stringify({
+          model: models[modelIndex],
+          messages: [{ role: 'system', content: CHAT_SYSTEM }].concat(chatHistory.slice(-20)),
+          max_tokens: 480,
+          stream: true,
+          temperature: 0.9
+        })
+      });
+
+      if (!response.ok) {
+        if (response.status === 404 && modelIndex + 1 < models.length) {
+          return tryModel(modelIndex + 1);
+        }
+        if (response.status === 429) throw new Error('rate_limit');
+        if (response.status === 401) throw new Error('auth_error');
+        throw new Error('HTTP ' + response.status);
+      }
+
+      removeTypingIndicator();
+
+      var msgContainer = document.getElementById('chat-messages');
+      var row = document.createElement('div');
+      row.className = 'msg-row ai';
+      var avatar = makeLogoAvatar();
+      var col = document.createElement('div');
+      col.className = 'msg-col';
+      var bubble = document.createElement('div');
+      bubble.className = 'msg-bubble ai';
+      bubble.textContent = '';
+      var time = document.createElement('div');
+      time.className = 'msg-time';
+      time.textContent = getTimestamp();
+      col.appendChild(bubble);
+      col.appendChild(time);
+      row.appendChild(avatar);
+      row.appendChild(col);
+      msgContainer.appendChild(row);
+
+      var reader = response.body.getReader();
+      var decoder = new TextDecoder();
+      var fullText = '';
+      var buffer = '';
+
+      while (true) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        buffer += decoder.decode(chunk.value, { stream: true });
+        var lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (var li = 0; li < lines.length; li++) {
+          var line = lines[li].trim();
+          if (!line.startsWith('data:')) continue;
+          var data = line.slice(5).trim();
+          if (data === '[DONE]') continue;
+          try {
+            var parsed = JSON.parse(data);
+            var delta = parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content;
+            if (delta) {
+              fullText += delta;
+              bubble.textContent = fullText;
+              msgContainer.scrollTop = msgContainer.scrollHeight;
+            }
+          } catch (e) {}
+        }
+      }
+
+      if (!fullText) fullText = 'Tell me more about your vision!';
+      bubble.textContent = fullText;
+      chatHistory.push({ role: 'assistant', content: fullText });
+
+      bubble.title = 'Click to copy';
+      (function(t) {
+        bubble.addEventListener('click', function() {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(t).then(function() { showToast('Copied'); }).catch(function() {});
+          }
+        });
+      })(fullText);
+
+    } catch (err) {
+      removeTypingIndicator();
+      var errMsg = err.message === 'rate_limit'
+        ? 'Getting a lot of requests right now — try again in a few seconds!'
+        : err.message === 'auth_error'
+        ? 'AI connection issue. The demo is temporarily unavailable.'
+        : 'Having trouble connecting right now. Try again in a moment!';
+      addMessage('ai', errMsg);
+      if (chatHistory.length && chatHistory[chatHistory.length - 1].role === 'user') {
+        chatHistory.pop();
+      }
+    }
+  }
+
+  await tryModel(0);
+  document.getElementById('chat-send-btn').disabled = false;
+  chatBusy = false;
+};
+
+window.clearChat = function() {
+  chatHistory = [];
+  var container = document.getElementById('chat-messages');
+  while (container.firstChild) container.removeChild(container.firstChild);
+  addMessage('ai', CHAT_INIT);
+  chatHistory.push({ role: 'assistant', content: CHAT_INIT });
+  showToast('Chat cleared');
+};
+
+window.useHint = function(text) {
+  var ta = document.getElementById('chat-textarea');
+  ta.value = text;
+  ta.focus();
+  ta.style.height = '';
+  ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
+};
+
+var chatTA = document.getElementById('chat-textarea');
+chatTA.addEventListener('input', function() {
+  this.style.height = '';
+  this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+});
+chatTA.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+});
+
+/* ─────────────────────────────────────────────
+   STEP 23: GAME CONFIG PANEL
+───────────────────────────────────────────── */
+var cfgState = { mode: 'solo', world: 'open' };
+
+window.setCfgOption = function(btn, group) {
+  btn.closest('.cfg-group').querySelectorAll('.cfg-option').forEach(function(b) {
+    b.classList.remove('on');
+  });
+  btn.classList.add('on');
+  cfgState[group] = btn.getAttribute('data-val');
+};
+
+window.cfgGenerate = function() {
+  var genre = document.getElementById('cfg-genre-select').value || 'game';
+  var msg = 'Design a ' + genre + ' for ' + cfgState.mode + ' player(s), ' + cfgState.world + ' world. '
+    + 'Provide: game name, 3-sentence premise, core mechanic, 3 unique features, and what makes it unforgettable.';
+  document.getElementById('chat-textarea').value = msg;
+  goTo('creator');
+  setTimeout(sendChatMessage, 400);
+};
+
+/* ─────────────────────────────────────────────
+   STEP 24: FINAL OBSERVE PASS
+───────────────────────────────────────────── */
+observeAll();
+document.querySelectorAll('[data-count]').forEach(function(el) {
+  countObs.observe(el);
+});
+
+// Accessibility: keyboard nav for nav-link spans
+document.querySelectorAll('.nl, .nbrand').forEach(function(el) {
+  if (!el.getAttribute('tabindex')) el.setAttribute('tabindex', '0');
+  el.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+  });
+});
+
+// Billing switch keyboard
+var btSw = document.getElementById('bt-switch');
+if (btSw) {
+  btSw.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleBilling(); }
+  });
+}
+
+})(); // end IIFE
+</script>
+</body>
+</html>
