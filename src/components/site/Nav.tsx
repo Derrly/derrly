@@ -64,6 +64,8 @@ export function Nav() {
 
         <button
           aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="mobile-nav"
           className="rounded-md p-2 md:hidden"
           onClick={() => setOpen((v) => !v)}
         >
@@ -72,7 +74,7 @@ export function Nav() {
       </div>
 
       {open && (
-        <div className="border-t hairline bg-background md:hidden">
+        <div id="mobile-nav" className="border-t hairline bg-background md:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col px-6 py-4">
             {NAV.map((item) => (
               <Link

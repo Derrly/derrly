@@ -4,12 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { ArrowLeft, Plus, Send, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Send, Loader2, Pencil, Trash2 } from "lucide-react";
 import {
   getProject,
   listThreads,
   createThread,
   listMessages,
+  renameThread,
+  deleteThread,
 } from "@/lib/studio.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { AGENTS } from "@/lib/derrly-data";
@@ -24,6 +26,8 @@ function ProjectPage() {
   const fetchThreads = useServerFn(listThreads);
   const fetchMessages = useServerFn(listMessages);
   const makeThread = useServerFn(createThread);
+  const renameFn = useServerFn(renameThread);
+  const deleteFn = useServerFn(deleteThread);
   const qc = useQueryClient();
 
   const project = useQuery({
@@ -66,6 +70,20 @@ function ProjectPage() {
     setActiveId(id);
   };
 
+  const handleRename = async (threadId: string, current: string) => {
+    const next = window.prompt("Rename thread", current);
+    if (!next || next.trim() === current) return;
+    await renameFn({ data: { threadId, title: next.trim() } });
+    await qc.invalidateQueries({ queryKey: ["threads", projectId] });
+  };
+
+  const handleDelete = async (threadId: string) => {
+    if (!window.confirm("Delete this thread and all its messages?")) return;
+    await deleteFn({ data: { threadId } });
+    if (activeId === threadId) setActiveId(null);
+    await qc.invalidateQueries({ queryKey: ["threads", projectId] });
+  };
+
   return (
     <div className="mx-auto grid min-h-[calc(100dvh-3.5rem)] max-w-[1400px] grid-cols-1 lg:grid-cols-[260px_1fr]">
       <aside className="border-b hairline lg:border-b-0 lg:border-r">
@@ -91,16 +109,30 @@ function ProjectPage() {
           </p>
           <ul className="space-y-0.5">
             {threads.data?.map((t) => (
-              <li key={t.id}>
+              <li key={t.id} className="group flex items-center gap-1">
                 <button
                   onClick={() => setActiveId(t.id)}
-                  className={`w-full rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+                  className={`flex-1 truncate rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
                     activeId === t.id
                       ? "bg-foreground text-background"
                       : "text-foreground/80 hover:bg-surface"
                   }`}
                 >
                   {t.title}
+                </button>
+                <button
+                  onClick={() => handleRename(t.id, t.title)}
+                  aria-label={`Rename ${t.title}`}
+                  className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus:opacity-100"
+                >
+                  <Pencil className="size-3" />
+                </button>
+                <button
+                  onClick={() => handleDelete(t.id)}
+                  aria-label={`Delete ${t.title}`}
+                  className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100 focus:opacity-100"
+                >
+                  <Trash2 className="size-3" />
                 </button>
               </li>
             ))}

@@ -5,6 +5,24 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Plus, Loader2 } from "lucide-react";
 import { listProjects, createProject } from "@/lib/studio.functions";
 
+const EXAMPLES = [
+  {
+    title: "Umbra Reach",
+    prompt:
+      "A co-op stealth heist game set in a brutalist megacity where shadows are a resource you can spend.",
+  },
+  {
+    title: "Tide of Kyoto",
+    prompt:
+      "A multiplayer zombie survival game in a flooded Tokyo with a weather system that shapes horde behavior.",
+  },
+  {
+    title: "Glassmaker",
+    prompt:
+      "A cozy single-player crafting sim where you blow glass instruments and tune a haunted village's music.",
+  },
+];
+
 export const Route = createFileRoute("/_authenticated/app/")({
   component: Dashboard,
 });
@@ -87,6 +105,27 @@ function Dashboard() {
           </button>
         </div>
       </form>
+
+      <div className="mt-6">
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+          Need a spark?
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {EXAMPLES.map((ex) => (
+            <button
+              key={ex.title}
+              type="button"
+              onClick={() => {
+                setTitle(ex.title);
+                setPrompt(ex.prompt);
+              }}
+              className="rounded-full border hairline px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+            >
+              {ex.title}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="mt-16">
         <h2 className="font-display text-2xl text-foreground">Recent projects</h2>

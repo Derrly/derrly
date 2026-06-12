@@ -21,6 +21,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const onEmail = async (e: React.FormEvent) => {
@@ -44,6 +45,27 @@ function AuthPage() {
         if (error) throw error;
         navigate({ to: "/app", replace: true });
       }
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onForgot = async () => {
+    setErr(null);
+    setInfo(null);
+    if (!email) {
+      setErr("Enter your email above first, then tap reset.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setInfo("Check your inbox for a reset link.");
     } catch (e) {
       setErr((e as Error).message);
     } finally {
@@ -124,6 +146,7 @@ function AuthPage() {
           className="h-11 w-full rounded-full border hairline bg-background px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-foreground"
         />
         {err && <p className="text-sm text-destructive">{err}</p>}
+        {info && <p className="text-sm text-foreground">{info}</p>}
         <button
           type="submit"
           disabled={busy}
@@ -140,12 +163,25 @@ function AuthPage() {
           onClick={() => {
             setMode(mode === "signup" ? "signin" : "signup");
             setErr(null);
+            setInfo(null);
           }}
           className="text-foreground underline-offset-4 hover:underline"
         >
           {mode === "signup" ? "Sign in" : "Create a studio"}
         </button>
       </p>
+      {mode === "signin" && (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Forgot password?{" "}
+          <button
+            type="button"
+            onClick={onForgot}
+            className="text-foreground underline-offset-4 hover:underline"
+          >
+            Send reset link
+          </button>
+        </p>
+      )}
       <p className="mt-3 text-xs text-muted-foreground">
         <Link to="/" className="hover:underline">← Back to home</Link>
       </p>
