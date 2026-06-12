@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Sparkle, ShieldCheck, Gauge, Eye } from "lucide-react";
+import { ArrowUpRight, Sparkle, ShieldCheck, Gauge, Eye, Lock, FileText, Download } from "lucide-react";
 import { Section, SectionHeader } from "@/components/site/Section";
-import { AGENTS, CREATES, FAQS, PIPELINE, SHOWCASE, TIERS } from "@/lib/derrly-data";
+import { AGENTS, FAQS, PIPELINE, SHOWCASE, TIERS } from "@/lib/derrly-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -10,13 +10,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Describe a game and Derrly's AI studio designs, builds, tests, and improves it automatically. The first autonomous AI game studio.",
+          "Describe a game and Derrly's AI studio designs, builds, tests, and ships it. The first autonomous AI game studio.",
       },
       { property: "og:title", content: "Derrly — Build entire games through conversation" },
       {
         property: "og:description",
-        content:
-          "An autonomous AI studio that designs, builds, tests, and ships your game.",
+        content: "An autonomous AI studio that designs, builds, tests, and ships your game.",
       },
     ],
   }),
@@ -27,11 +26,10 @@ function Home() {
   return (
     <>
       <Hero />
-      <WhatIs />
+      <TrustStrip />
       <HowItWorks />
       <AgentsPreview />
       <LiveExample />
-      <Creates />
       <Testing />
       <ShowcasePreview />
       <PricingPreview />
@@ -45,11 +43,11 @@ function Hero() {
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 grid-bg opacity-[0.35]" aria-hidden />
-      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-32 md:pt-40 md:pb-48">
+      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-28 md:pt-40 md:pb-40">
         <div className="mx-auto max-w-4xl text-center">
           <div className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full border hairline bg-background/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
             <span className="inline-block size-1.5 rounded-full bg-foreground" />
-            Now in early access · v12
+            Private beta — invites going out weekly
           </div>
           <h1 className="font-display text-5xl leading-[1.02] text-foreground md:text-8xl">
             Build entire games
@@ -57,23 +55,23 @@ function Hero() {
             through <em className="italic">conversation</em>.
           </h1>
           <p className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground md:text-xl">
-            Describe a game. Derrly&apos;s AI studio designs, builds, tests, and improves it
-            automatically — like hiring an entire AAA team.
+            Describe a game in plain English. Fourteen specialist AI agents design it, write it,
+            build it, and test it — then hand you a playable build.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link
-              to="/"
+              to="/auth"
               className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
             >
-              Start building free
+              Get access
               <ArrowUpRight className="size-4" />
             </Link>
             <Link
               to="/showcase"
               className="inline-flex items-center gap-2 rounded-full border hairline px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
             >
-              See projects in the wild
+              See what people are making
             </Link>
           </div>
         </div>
@@ -131,35 +129,31 @@ function Hero() {
   );
 }
 
-function WhatIs() {
+function TrustStrip() {
+  const items = [
+    { icon: FileText, label: "You own everything", sub: "Worlds, code, characters, builds." },
+    { icon: Lock, label: "Private by default", sub: "Your prompts never train shared models." },
+    { icon: Download, label: "Exportable builds", sub: "Take your game with you, any time." },
+    { icon: ShieldCheck, label: "Reviewed before you see it", sub: "QA, perf, balance, a11y agents sign off." },
+  ];
   return (
-    <Section>
-      <div className="grid gap-16 md:grid-cols-[1fr_2fr]">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-          What is Derrly
-        </p>
-        <div>
-          <h2 className="font-display text-4xl leading-[1.1] text-foreground md:text-6xl">
-            Derrly is not a chatbot. Not a generator. Not a website.
-            <br />
-            <span className="text-muted-foreground">
-              It is an autonomous studio of specialist agents who build your game for you.
-            </span>
-          </h2>
-          <p className="mt-8 max-w-2xl text-lg text-muted-foreground">
-            You describe what you want to play. The producer assigns the work. The creative
-            director defends the vision. Designers, engineers, and QA do their jobs. You get a
-            playable game and a paper trail.
-          </p>
-        </div>
+    <section className="border-t hairline bg-surface">
+      <div className="mx-auto grid max-w-7xl gap-px overflow-hidden bg-border sm:grid-cols-2 lg:grid-cols-4">
+        {items.map((i) => (
+          <div key={i.label} className="bg-surface p-6">
+            <i.icon className="size-5 text-foreground" />
+            <p className="mt-3 text-sm font-medium text-foreground">{i.label}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{i.sub}</p>
+          </div>
+        ))}
       </div>
-    </Section>
+    </section>
   );
 }
 
 function HowItWorks() {
   return (
-    <Section className="bg-surface">
+    <Section>
       <SectionHeader
         eyebrow="How it works"
         title={<>From a sentence to a playable build.</>}
@@ -181,12 +175,12 @@ function HowItWorks() {
 function AgentsPreview() {
   const featured = AGENTS.slice(0, 6);
   return (
-    <Section>
+    <Section className="bg-surface">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <SectionHeader
           eyebrow="The studio"
-          title={<>Meet the team.</>}
-          description="Fourteen specialists, coordinated by an executive producer."
+          title={<>Fourteen specialists. One shared brief.</>}
+          description="Each agent has a job, an output, and a place in the pipeline."
         />
         <Link
           to="/agents"
@@ -217,20 +211,23 @@ function AgentsPreview() {
 
 function LiveExample() {
   return (
-    <Section className="bg-surface">
+    <Section>
       <SectionHeader
-        eyebrow="Live project"
-        title={<><em>Umbra Reach</em> — built in 9 minutes.</>}
-        description="Six investigators, one collapsing cathedral, infinite ways to die. Here is what the studio produced from a single prompt."
+        eyebrow="A real project"
+        title={<><em>Umbra Reach</em> — from one prompt.</>}
+        description="Six investigators, one collapsing cathedral, infinite ways to die. Every project ships with the same nine artifacts."
       />
       <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border hairline bg-border md:grid-cols-3">
         {[
-          { k: "World", v: "12 zones, 38 named rooms, 4 boss arenas" },
-          { k: "Story", v: "9 endings across 3 narrative arcs" },
-          { k: "Characters", v: "23 named NPCs with full dialogue trees" },
-          { k: "Quests", v: "6 main + 14 optional" },
-          { k: "Economy", v: "Faith currency, ritual exchange rates" },
-          { k: "QA report", v: "0 blockers, 4 nits, 99 frames at p99" },
+          { k: "Vision document", v: "Pillars, references, tone, scope." },
+          { k: "Gameplay loop", v: "Core verbs, pacing, reward cadence." },
+          { k: "World design", v: "12 zones, 38 named rooms, 4 boss arenas." },
+          { k: "Character database", v: "23 named NPCs with full dialogue trees." },
+          { k: "Quest structure", v: "6 main + 14 optional, fully wired." },
+          { k: "Economy design", v: "Faith currency, ritual exchange rates." },
+          { k: "Technical plan", v: "Systems, netcode, save layer." },
+          { k: "QA report", v: "0 blockers, 4 nits, 99fps at p99." },
+          { k: "Version history", v: "Every change, every agent, every build." },
         ].map(({ k, v }) => (
           <div key={k} className="bg-background p-6">
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -238,27 +235,6 @@ function LiveExample() {
             </p>
             <p className="mt-3 text-base text-foreground">{v}</p>
           </div>
-        ))}
-      </div>
-    </Section>
-  );
-}
-
-function Creates() {
-  return (
-    <Section>
-      <SectionHeader
-        eyebrow="What it creates"
-        title={<>Every layer of a real game.</>}
-      />
-      <div className="mt-12 flex flex-wrap gap-2">
-        {CREATES.map((c) => (
-          <span
-            key={c}
-            className="rounded-full border hairline bg-background px-4 py-2 text-sm text-foreground"
-          >
-            {c}
-          </span>
         ))}
       </div>
     </Section>
@@ -275,9 +251,9 @@ function Testing() {
   return (
     <Section className="bg-surface">
       <SectionHeader
-        eyebrow="Automated testing"
+        eyebrow="Automated review"
         title={<>Every build is reviewed before you see it.</>}
-        description="Four specialist agents sign off on every release. No build ships without them."
+        description="Four specialist agents sign off on every release. Nothing ships without them."
       />
       <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border hairline bg-border sm:grid-cols-2 lg:grid-cols-4">
         {agents.map((a) => (
@@ -403,14 +379,14 @@ function CTA() {
           Your studio is waiting.
         </h2>
         <p className="mt-6 text-lg opacity-80">
-          Pick a genre. Describe a feeling. Watch fourteen agents go to work.
+          Describe a game. Watch fourteen agents go to work.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <Link
-            to="/"
+            to="/auth"
             className="inline-flex items-center gap-2 rounded-full bg-background px-6 py-3 text-sm font-medium text-foreground transition-opacity hover:opacity-90"
           >
-            Start building free
+            Get access
             <ArrowUpRight className="size-4" />
           </Link>
           <Link
