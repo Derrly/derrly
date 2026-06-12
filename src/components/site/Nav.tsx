@@ -48,18 +48,19 @@ export function Nav() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Link
-            to="/"
-            className="rounded-full border hairline px-4 py-2 text-sm transition-colors hover:bg-secondary"
+            to="/auth"
+            className="rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Sign in
           </Link>
           <Link
-            to="/"
+            to="/auth"
             className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
           >
-            Start building
+            Get access
           </Link>
         </div>
+
 
         <button
           aria-label={open ? "Close menu" : "Open menu"}
@@ -84,16 +85,18 @@ export function Nav() {
               </Link>
             ))}
             <div className="mt-2 flex gap-2 border-t hairline pt-4">
-              <Link to="/" className="flex-1 rounded-full border hairline px-4 py-2 text-center text-sm">
+              <Link to="/auth" onClick={() => setOpen(false)} className="flex-1 rounded-full border hairline px-4 py-2 text-center text-sm">
                 Sign in
               </Link>
               <Link
-                to="/"
+                to="/auth"
+                onClick={() => setOpen(false)}
                 className="flex-1 rounded-full bg-foreground px-4 py-2 text-center text-sm font-medium text-background"
               >
-                Start
+                Get access
               </Link>
             </div>
+
           </nav>
         </div>
       )}
