@@ -27,20 +27,17 @@ export function Footer() {
           title="Resources"
           links={[
             { to: "/faq", label: "FAQ" },
-            { to: "/", label: "Docs" },
-            { to: "/", label: "Changelog" },
-            { to: "/", label: "Status" },
+            { to: "/auth", label: "Get access" },
           ]}
         />
         <FooterCol
           title="Company"
           links={[
-            { to: "/", label: "About" },
-            { to: "/", label: "Careers" },
-            { to: "/", label: "Privacy" },
-            { to: "/", label: "Terms" },
+            { to: "/", label: "Home" },
+            { to: "/legacy", label: "Archive" },
           ]}
         />
+
       </div>
       <div className="border-t hairline">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-2 px-6 py-6 text-xs text-muted-foreground md:flex-row">
