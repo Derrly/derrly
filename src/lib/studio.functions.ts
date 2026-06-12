@@ -124,3 +124,42 @@ export const listMessages = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
+
+const RenameThread = z.object({
+  threadId: z.string().uuid(),
+  title: z.string().min(1).max(120),
+});
+
+export const renameThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => RenameThread.parse(input))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("threads")
+      .update({ title: data.title })
+      .eq("id", data.threadId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteThread = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ threadId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await context.supabase.from("messages").delete().eq("thread_id", data.threadId);
+    const { error } = await context.supabase.from("threads").delete().eq("id", data.threadId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteProject = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("projects")
+      .delete()
+      .eq("id", data.projectId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
