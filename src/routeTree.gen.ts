@@ -9,8 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ShowcaseRouteImport } from './routes/showcase'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LegacyRouteImport } from './routes/legacy'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -23,6 +25,11 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAppProjectsProjectIdRouteImport } from './routes/_authenticated/app.projects.$projectId'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShowcaseRoute = ShowcaseRouteImport.update({
   id: '/showcase',
   path: '/showcase',
@@ -31,6 +38,11 @@ const ShowcaseRoute = ShowcaseRouteImport.update({
 const RoadmapRoute = RoadmapRouteImport.update({
   id: '/roadmap',
   path: '/roadmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -96,8 +108,10 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/legacy': typeof LegacyRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/roadmap': typeof RoadmapRoute
   '/showcase': typeof ShowcaseRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/app/': typeof AuthenticatedAppIndexRoute
@@ -110,8 +124,10 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/legacy': typeof LegacyRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/roadmap': typeof RoadmapRoute
   '/showcase': typeof ShowcaseRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/chat': typeof ApiChatRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/app/projects/$projectId': typeof AuthenticatedAppProjectsProjectIdRoute
@@ -125,8 +141,10 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/legacy': typeof LegacyRoute
   '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/roadmap': typeof RoadmapRoute
   '/showcase': typeof ShowcaseRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
@@ -141,8 +159,10 @@ export interface FileRouteTypes {
     | '/faq'
     | '/legacy'
     | '/pricing'
+    | '/reset-password'
     | '/roadmap'
     | '/showcase'
+    | '/sitemap.xml'
     | '/app'
     | '/api/chat'
     | '/app/'
@@ -155,8 +175,10 @@ export interface FileRouteTypes {
     | '/faq'
     | '/legacy'
     | '/pricing'
+    | '/reset-password'
     | '/roadmap'
     | '/showcase'
+    | '/sitemap.xml'
     | '/api/chat'
     | '/app'
     | '/app/projects/$projectId'
@@ -169,8 +191,10 @@ export interface FileRouteTypes {
     | '/faq'
     | '/legacy'
     | '/pricing'
+    | '/reset-password'
     | '/roadmap'
     | '/showcase'
+    | '/sitemap.xml'
     | '/_authenticated/app'
     | '/api/chat'
     | '/_authenticated/app/'
@@ -185,13 +209,22 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   LegacyRoute: typeof LegacyRoute
   PricingRoute: typeof PricingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   RoadmapRoute: typeof RoadmapRoute
   ShowcaseRoute: typeof ShowcaseRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/showcase': {
       id: '/showcase'
       path: '/showcase'
@@ -204,6 +237,13 @@ declare module '@tanstack/react-router' {
       path: '/roadmap'
       fullPath: '/roadmap'
       preLoaderRoute: typeof RoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -319,8 +359,10 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   LegacyRoute: LegacyRoute,
   PricingRoute: PricingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   RoadmapRoute: RoadmapRoute,
   ShowcaseRoute: ShowcaseRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
