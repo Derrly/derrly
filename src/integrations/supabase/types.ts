@@ -14,7 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      messages: {
+        Row: {
+          ai_message_id: string | null
+          content: string
+          created_at: string
+          id: string
+          model: string | null
+          owner_id: string
+          parts: Json | null
+          role: string
+          thread_id: string
+        }
+        Insert: {
+          ai_message_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          owner_id: string
+          parts?: Json | null
+          role: string
+          thread_id: string
+        }
+        Update: {
+          ai_message_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          owner_id?: string
+          parts?: Json | null
+          role?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          studio_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          studio_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          studio_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          prompt: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          prompt?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          prompt?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      threads: {
+        Row: {
+          agent: string | null
+          created_at: string
+          id: string
+          owner_id: string
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agent?: string | null
+          created_at?: string
+          id?: string
+          owner_id: string
+          project_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          agent?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "threads_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
