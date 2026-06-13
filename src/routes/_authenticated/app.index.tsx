@@ -71,11 +71,11 @@ function Dashboard() {
         What are we building today?
       </h1>
 
-      <form
-        onSubmit={handleCreate}
-        className="mt-10 rounded-2xl border hairline bg-card p-6"
-      >
-        <label htmlFor="project-title" className="block text-xs font-medium uppercase tracking-widest text-muted-foreground">
+      <form onSubmit={handleCreate} className="mt-10 rounded-2xl border hairline bg-card p-6">
+        <label
+          htmlFor="project-title"
+          className="block text-xs font-medium uppercase tracking-widest text-muted-foreground"
+        >
           Project title
         </label>
         <input
@@ -85,7 +85,10 @@ function Dashboard() {
           placeholder="Umbra Reach"
           className="mt-2 w-full bg-transparent text-2xl font-display text-foreground outline-none placeholder:text-muted-foreground/60"
         />
-        <label htmlFor="project-pitch" className="mt-6 block text-xs font-medium uppercase tracking-widest text-muted-foreground">
+        <label
+          htmlFor="project-pitch"
+          className="mt-6 block text-xs font-medium uppercase tracking-widest text-muted-foreground"
+        >
           One-sentence pitch
         </label>
         <textarea

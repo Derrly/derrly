@@ -8,8 +8,7 @@ export const Route = createFileRoute("/agents")({
       { title: "Agents — Derrly" },
       {
         name: "description",
-        content:
-          "Meet the 14 specialist AI agents that make up Derrly's autonomous game studio.",
+        content: "Meet the 14 specialist AI agents that make up Derrly's autonomous game studio.",
       },
       { property: "og:title", content: "The Derrly studio — 14 agents" },
       {
@@ -35,9 +34,9 @@ function AgentsPage() {
             You talk to one.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-            Your Executive Producer coordinates the full studio. Every specialist has a
-            defined role, shares project memory, reviews connected work, and produces
-            structured outputs automatically.
+            Your Executive Producer coordinates the full studio. Every specialist has a defined
+            role, shares project memory, reviews connected work, and produces structured outputs
+            automatically.
           </p>
         </div>
       </section>
