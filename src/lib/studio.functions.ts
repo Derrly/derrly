@@ -60,17 +60,6 @@ export const createProject = createServerFn({ method: "POST" })
       throw new Error(threadError.message);
     }
 
-    const { error: memoryError } = await context.supabase.from("project_memory").insert({
-      project_id: project.id,
-      owner_id: context.userId,
-      category: "brief",
-      title: "Original game pitch",
-      content: { prompt: data.prompt },
-      source_agent: "executive-producer",
-      status: "approved",
-    });
-    if (memoryError) throw new Error(memoryError.message);
-
     return { id: project.id };
   });
 
