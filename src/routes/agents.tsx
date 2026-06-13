@@ -1,6 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, MessageSquare } from "lucide-react";
 import { Section } from "@/components/site/Section";
 import { AGENTS } from "@/lib/derrly-data";
+
+const HANDOFFS: Array<[string, string, string]> = [
+  ["Executive Producer", "Creative Director", "brief"],
+  ["Creative Director", "World Architect", "pillars + tone"],
+  ["World Architect", "Narrative Designer", "regions + lore"],
+  ["Narrative Designer", "NPC Designer", "story beats"],
+  ["NPC Designer", "Quest Designer", "characters + factions"],
+  ["Quest Designer", "Gameplay Engineer", "quest graph"],
+  ["Gameplay Engineer", "Economy Designer", "systems"],
+  ["Economy Designer", "QA Tester", "balance model"],
+  ["QA Tester", "Game Builder", "approved package"],
+];
 
 export const Route = createFileRoute("/agents")({
   head: () => ({
