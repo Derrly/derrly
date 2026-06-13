@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, Plus, Loader2 } from "lucide-react";
+import { ArrowUpRight, Plus, Loader2, X } from "lucide-react";
+
 import { listProjects, createProject } from "@/lib/studio.functions";
 import { Button } from "@/components/ui/button";
 
