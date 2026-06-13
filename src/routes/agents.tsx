@@ -8,8 +8,7 @@ export const Route = createFileRoute("/agents")({
       { title: "Agents — Derrly" },
       {
         name: "description",
-        content:
-          "Meet the 14 specialist AI agents that make up Derrly's autonomous game studio.",
+        content: "Meet the 14 specialist AI agents that make up Derrly's autonomous game studio.",
       },
       { property: "og:title", content: "The Derrly studio — 14 agents" },
       {
@@ -32,11 +31,12 @@ function AgentsPage() {
           <h1 className="mt-6 font-display text-5xl leading-[1.05] text-foreground md:text-7xl">
             Fourteen specialists.
             <br />
-            One shared brief.
+            You talk to one.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-            Each agent has a job, an output, and a place in the pipeline. You can ask any of
-            them a question at any time.
+            Your Executive Producer coordinates the full studio. Every specialist has a defined
+            role, shares project memory, reviews connected work, and produces structured outputs
+            automatically.
           </p>
         </div>
       </section>
@@ -79,7 +79,6 @@ function AgentsPage() {
           ))}
         </div>
       </Section>
-
     </>
   );
 }

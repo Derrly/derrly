@@ -61,13 +61,12 @@ function AuthPage() {
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
-      if (error) throw error;
-      setInfo("Check your inbox for a reset link.");
-    } catch (e) {
-      setErr((e as Error).message);
+      setInfo("If that email is registered, you'll receive a reset link shortly.");
+    } catch {
+      setInfo("If that email is registered, you'll receive a reset link shortly.");
     } finally {
       setBusy(false);
     }
@@ -183,7 +182,9 @@ function AuthPage() {
         </p>
       )}
       <p className="mt-3 text-xs text-muted-foreground">
-        <Link to="/" className="hover:underline">← Back to home</Link>
+        <Link to="/" className="hover:underline">
+          ← Back to home
+        </Link>
       </p>
     </section>
   );
