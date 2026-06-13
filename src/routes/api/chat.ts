@@ -82,8 +82,7 @@ export const Route = createFileRoute("/api/chat")({
           role: "user",
           content: text,
           parts: [{ type: "text", text }],
-          ai_message_id:
-            typeof latestClientMessage.id === "string" ? latestClientMessage.id : null,
+          ai_message_id: typeof latestClientMessage.id === "string" ? latestClientMessage.id : null,
         });
         if (userMessageError) {
           return new Response("Could not save your message", { status: 500 });
