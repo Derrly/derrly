@@ -59,7 +59,8 @@ function messageText(message: UIMessage) {
 async function must<T>(promise: PromiseLike<{ data: T; error: { message: string } | null }>) {
   const result = await promise;
   if (result.error) throw new Error(result.error.message);
-  return result.data;
+  if (result.data == null) throw new Error("The studio database returned no data.");
+  return result.data as NonNullable<T>;
 }
 
 export async function runAutonomousStudio({
