@@ -128,10 +128,24 @@ export const Route = createFileRoute("/api/chat")({
           const stream = new ReadableStream({
             start(controller) {
               const encoder = new TextEncoder();
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "start", messageId: assistantId })}\n\n`));
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "text-start", id: "summary" })}\n\n`));
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "text-delta", id: "summary", delta: summary })}\n\n`));
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "text-end", id: "summary" })}\n\n`));
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: "start", messageId: assistantId })}\n\n`,
+                ),
+              );
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: "text-start", id: "summary" })}\n\n`,
+                ),
+              );
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: "text-delta", id: "summary", delta: summary })}\n\n`,
+                ),
+              );
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "text-end", id: "summary" })}\n\n`),
+              );
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "finish" })}\n\n`));
               controller.enqueue(encoder.encode("data: [DONE]\n\n"));
               controller.close();

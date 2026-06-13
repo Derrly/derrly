@@ -12,19 +12,47 @@ const specialistIds = AGENTS.filter((agent) => agent.id !== "executive-producer"
 );
 
 const artifactByAgent: Record<string, { type: string; title: string; category: string }> = {
-  "creative-director": { type: "game-design-document", title: "Game Design Document", category: "vision" },
+  "creative-director": {
+    type: "game-design-document",
+    title: "Game Design Document",
+    category: "vision",
+  },
   "world-architect": { type: "world-map", title: "World & Region Blueprint", category: "world" },
   "narrative-designer": { type: "story-bible", title: "Narrative Bible", category: "story" },
   "npc-designer": { type: "character-database", title: "Character Database", category: "npcs" },
   "quest-designer": { type: "quest-tree", title: "Quest & Progression Tree", category: "quests" },
-  "gameplay-engineer": { type: "systems-blueprint", title: "Gameplay Systems Blueprint", category: "systems" },
-  "economy-designer": { type: "economy-model", title: "Economy & Progression Model", category: "systems" },
-  "multiplayer-engineer": { type: "multiplayer-architecture", title: "Multiplayer Architecture", category: "systems" },
-  "ui-designer": { type: "interface-system", title: "Interface & Accessibility System", category: "systems" },
-  "performance-engineer": { type: "performance-report", title: "Performance Budget", category: "testing" },
+  "gameplay-engineer": {
+    type: "systems-blueprint",
+    title: "Gameplay Systems Blueprint",
+    category: "systems",
+  },
+  "economy-designer": {
+    type: "economy-model",
+    title: "Economy & Progression Model",
+    category: "systems",
+  },
+  "multiplayer-engineer": {
+    type: "multiplayer-architecture",
+    title: "Multiplayer Architecture",
+    category: "systems",
+  },
+  "ui-designer": {
+    type: "interface-system",
+    title: "Interface & Accessibility System",
+    category: "systems",
+  },
+  "performance-engineer": {
+    type: "performance-report",
+    title: "Performance Budget",
+    category: "testing",
+  },
   "balance-specialist": { type: "balance-report", title: "Balance Review", category: "testing" },
   "qa-tester": { type: "qa-report", title: "QA Report", category: "testing" },
-  "game-builder": { type: "playable-build", title: "Playable Build Specification", category: "assets" },
+  "game-builder": {
+    type: "playable-build",
+    title: "Playable Build Specification",
+    category: "assets",
+  },
 };
 
 const PlanSchema = z.object({
@@ -95,7 +123,8 @@ export async function runAutonomousStudio({
   const planResult = await generateText({
     model: groq(GROQ_MODEL),
     output: Output.object({ schema: PlanSchema }),
-    system: "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists.",
+    system:
+      "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists.",
     prompt: `Project: ${projectTitle}\nOriginal pitch: ${projectPrompt ?? ""}\nLatest direction: ${latestRequest}\nShared memory: ${memoryContext}`,
   });
   const plan = planResult.output;
@@ -152,7 +181,12 @@ export async function runAutonomousStudio({
           run_id: run.id,
           owner_id: userId,
           agent: task.agent,
-          activity_type: task.agent === "qa-tester" ? "review" : task.agent === "game-builder" ? "build" : "working",
+          activity_type:
+            task.agent === "qa-tester"
+              ? "review"
+              : task.agent === "game-builder"
+                ? "build"
+                : "working",
           status: "active",
           summary: task.objective,
           details: { dependencies: task.dependsOn },
@@ -228,7 +262,9 @@ export async function runAutonomousStudio({
         .update({ status: "completed", completed_at: new Date().toISOString() })
         .eq("id", activity.id),
     );
-    for (const nextTask of plan.tasks.filter((candidate) => candidate.dependsOn.includes(task.agent))) {
+    for (const nextTask of plan.tasks.filter((candidate) =>
+      candidate.dependsOn.includes(task.agent),
+    )) {
       await must(
         supabase.from("agent_handoffs").insert({
           project_id: projectId,
@@ -251,7 +287,8 @@ export async function runAutonomousStudio({
   const reviewResult = await generateText({
     model: groq(GROQ_MODEL),
     output: Output.object({ schema: ReviewSchema }),
-    system: "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction.",
+    system:
+      "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction.",
     prompt: `Brief: ${plan.brief}\n\nDeliverables:\n${reviewTargets.map(([agent, output]) => `${agent}:\n${output}`).join("\n\n")}`,
   });
   const review = reviewResult.output;
@@ -311,12 +348,7 @@ export async function runAutonomousStudio({
       })
       .eq("id", run.id),
   );
-  await must(
-    supabase
-      .from("projects")
-      .update({ status: "ready" })
-      .eq("id", projectId),
-  );
+  await must(supabase.from("projects").update({ status: "ready" }).eq("id", projectId));
   await must(
     supabase.from("agent_activities").insert({
       project_id: projectId,

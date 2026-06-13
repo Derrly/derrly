@@ -65,14 +65,20 @@ function ProjectPage() {
           </Link>
           <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Executive Producer</p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                Executive Producer
+              </p>
               <h1 className="mt-1 font-display text-3xl text-foreground">
-            {project.data?.title ?? "Project"}
+                {project.data?.title ?? "Project"}
               </h1>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1 text-xs text-muted-foreground">
-              <span className={`size-1.5 rounded-full ${workspace.data?.run?.status === "running" ? "animate-pulse bg-foreground" : "bg-muted-foreground"}`} />
-              {workspace.data?.run?.status === "running" ? "Studio working" : project.data?.status ?? "Ready"}
+              <span
+                className={`size-1.5 rounded-full ${workspace.data?.run?.status === "running" ? "animate-pulse bg-foreground" : "bg-muted-foreground"}`}
+              />
+              {workspace.data?.run?.status === "running"
+                ? "Studio working"
+                : (project.data?.status ?? "Ready")}
             </span>
           </div>
         </header>
@@ -86,7 +92,9 @@ function ProjectPage() {
           />
         ) : (
           <div className="flex flex-1 items-center justify-center p-12 text-sm text-muted-foreground">
-            {workspace.isError || existing.isError ? "The studio could not be loaded." : "Opening the studio…"}
+            {workspace.isError || existing.isError
+              ? "The studio could not be loaded."
+              : "Opening the studio…"}
           </div>
         )}
       </section>
@@ -96,7 +104,11 @@ function ProjectPage() {
   );
 }
 
-function StudioPanel({ workspace }: { workspace: Awaited<ReturnType<typeof getStudioWorkspace>> | undefined }) {
+function StudioPanel({
+  workspace,
+}: {
+  workspace: Awaited<ReturnType<typeof getStudioWorkspace>> | undefined;
+}) {
   const activities = workspace?.activities ?? [];
   const artifacts = workspace?.artifacts ?? [];
   const memory = workspace?.memory ?? [];
@@ -105,14 +117,25 @@ function StudioPanel({ workspace }: { workspace: Awaited<ReturnType<typeof getSt
       <Tabs defaultValue="activity" className="sticky top-14">
         <div className="border-b hairline px-4 py-3">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="activity"><Radio /> Live</TabsTrigger>
-            <TabsTrigger value="artifacts"><FileText /> Artifacts</TabsTrigger>
-            <TabsTrigger value="memory"><Brain /> Memory</TabsTrigger>
+            <TabsTrigger value="activity">
+              <Radio /> Live
+            </TabsTrigger>
+            <TabsTrigger value="artifacts">
+              <FileText /> Artifacts
+            </TabsTrigger>
+            <TabsTrigger value="memory">
+              <Brain /> Memory
+            </TabsTrigger>
           </TabsList>
         </div>
-        <TabsContent value="activity" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
+        <TabsContent
+          value="activity"
+          className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5"
+        >
           <div aria-live="polite">
-            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Studio activity</p>
+            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              Studio activity
+            </p>
             {activities.length ? (
               <ol className="mt-5 space-y-5">
                 {activities.map((activity) => {
@@ -120,43 +143,97 @@ function StudioPanel({ workspace }: { workspace: Awaited<ReturnType<typeof getSt
                   return (
                     <li key={activity.id} className="grid grid-cols-[18px_1fr] gap-3">
                       <span className="mt-0.5 text-muted-foreground">
-                        {activity.status === "completed" ? <Check className="size-4" /> : <Circle className="size-3 animate-pulse fill-current" />}
+                        {activity.status === "completed" ? (
+                          <Check className="size-4" />
+                        ) : (
+                          <Circle className="size-3 animate-pulse fill-current" />
+                        )}
                       </span>
                       <div>
-                        <p className="text-sm font-medium text-foreground">{agent?.name ?? activity.agent}</p>
-                        <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{activity.summary}</p>
+                        <p className="text-sm font-medium text-foreground">
+                          {agent?.name ?? activity.agent}
+                        </p>
+                        <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+                          {activity.summary}
+                        </p>
                       </div>
                     </li>
                   );
                 })}
               </ol>
-            ) : <p className="mt-4 text-sm text-muted-foreground">Your studio is ready. Give the Executive Producer a direction to begin.</p>}
+            ) : (
+              <p className="mt-4 text-sm text-muted-foreground">
+                Your studio is ready. Give the Executive Producer a direction to begin.
+              </p>
+            )}
           </div>
         </TabsContent>
-        <TabsContent value="artifacts" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Approved deliverables</p>
-          {artifacts.length ? <div className="mt-4 space-y-3">{artifacts.map((artifact) => (
-            <details key={artifact.id} className="group border-b hairline pb-3">
-              <summary className="cursor-pointer list-none py-2">
-                <div className="flex items-start justify-between gap-3">
-                  <div><p className="text-sm font-medium text-foreground">{artifact.title}</p><p className="mt-1 text-xs text-muted-foreground">{AGENTS.find((a) => a.id === artifact.produced_by)?.name ?? artifact.produced_by}</p></div>
-                  <span className="rounded-full border hairline px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">v{artifact.version}</span>
-                </div>
-              </summary>
-              <div className="prose prose-sm mt-2 max-w-none text-sm leading-relaxed text-foreground [&_h1]:font-display [&_h2]:font-display [&_h3]:font-medium [&_li]:my-1 [&_p]:my-2">
-                <ReactMarkdown>{artifact.content && typeof artifact.content === "object" && !Array.isArray(artifact.content) && typeof artifact.content.markdown === "string" ? artifact.content.markdown : artifact.summary}</ReactMarkdown>
-              </div>
-            </details>
-          ))}</div> : <p className="mt-4 text-sm text-muted-foreground">Artifacts appear here as specialists complete and review their work.</p>}
+        <TabsContent
+          value="artifacts"
+          className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5"
+        >
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Approved deliverables
+          </p>
+          {artifacts.length ? (
+            <div className="mt-4 space-y-3">
+              {artifacts.map((artifact) => (
+                <details key={artifact.id} className="group border-b hairline pb-3">
+                  <summary className="cursor-pointer list-none py-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{artifact.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {AGENTS.find((a) => a.id === artifact.produced_by)?.name ??
+                            artifact.produced_by}
+                        </p>
+                      </div>
+                      <span className="rounded-full border hairline px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        v{artifact.version}
+                      </span>
+                    </div>
+                  </summary>
+                  <div className="prose prose-sm mt-2 max-w-none text-sm leading-relaxed text-foreground [&_h1]:font-display [&_h2]:font-display [&_h3]:font-medium [&_li]:my-1 [&_p]:my-2">
+                    <ReactMarkdown>
+                      {artifact.content &&
+                      typeof artifact.content === "object" &&
+                      !Array.isArray(artifact.content) &&
+                      typeof artifact.content.markdown === "string"
+                        ? artifact.content.markdown
+                        : artifact.summary}
+                    </ReactMarkdown>
+                  </div>
+                </details>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">
+              Artifacts appear here as specialists complete and review their work.
+            </p>
+          )}
         </TabsContent>
         <TabsContent value="memory" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Shared project state</p>
-          {memory.length ? <ul className="mt-4 divide-y hairline">{memory.map((item) => (
-            <li key={item.id} className="py-3">
-              <div className="flex items-center justify-between gap-3"><p className="text-sm font-medium text-foreground">{item.title}</p><span className="text-[10px] uppercase tracking-wider text-muted-foreground">{item.category}</span></div>
-              <p className="mt-1 text-xs text-muted-foreground">{AGENTS.find((a) => a.id === item.source_agent)?.name ?? item.source_agent} · v{item.version}</p>
-            </li>
-          ))}</ul> : null}
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Shared project state
+          </p>
+          {memory.length ? (
+            <ul className="mt-4 divide-y hairline">
+              {memory.map((item) => (
+                <li key={item.id} className="py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-foreground">{item.title}</p>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {item.category}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {AGENTS.find((a) => a.id === item.source_agent)?.name ?? item.source_agent} · v
+                    {item.version}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </TabsContent>
       </Tabs>
     </aside>
@@ -186,9 +263,7 @@ function ChatWindow({
             headers.set("Authorization", `Bearer ${data.session.access_token}`);
           }
           headers.set("Content-Type", "application/json");
-          const original = init?.body
-            ? JSON.parse(init.body as string)
-            : {};
+          const original = init?.body ? JSON.parse(init.body as string) : {};
           return fetch(input, {
             ...init,
             headers,
@@ -251,9 +326,7 @@ function ChatWindow({
           )}
           <ul className="space-y-6">
             {messages.map((m) => {
-              const text = m.parts
-                .map((p) => (p.type === "text" ? p.text : ""))
-                .join("");
+              const text = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
               if (m.role === "user") {
                 return (
                   <li key={m.id} className="flex justify-end">
@@ -269,14 +342,17 @@ function ChatWindow({
                     Executive Producer
                   </p>
                   <div className="prose max-w-none text-base leading-relaxed text-foreground prose-headings:font-display prose-p:my-3 prose-li:my-1">
-                    <ReactMarkdown>{text || (busy ? "Coordinating the studio…" : "")}</ReactMarkdown>
+                    <ReactMarkdown>
+                      {text || (busy ? "Coordinating the studio…" : "")}
+                    </ReactMarkdown>
                   </div>
                 </li>
               );
             })}
             {busy && messages[messages.length - 1]?.role === "user" && (
               <li className="text-sm text-muted-foreground">
-                <Loader2 className="inline size-3 animate-spin" /> Executive Producer is coordinating the studio…
+                <Loader2 className="inline size-3 animate-spin" /> Executive Producer is
+                coordinating the studio…
               </li>
             )}
             {error && (
@@ -288,10 +364,7 @@ function ChatWindow({
         </div>
       </div>
 
-      <form
-        onSubmit={submit}
-        className="border-t hairline bg-background p-4"
-      >
+      <form onSubmit={submit} className="border-t hairline bg-background p-4">
         <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border hairline bg-card p-2 focus-within:ring-2 focus-within:ring-foreground">
           <textarea
             ref={inputRef}

@@ -117,7 +117,9 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
           .limit(80),
         context.supabase
           .from("project_artifacts")
-          .select("id, artifact_type, title, summary, content, produced_by, version, review_status, updated_at")
+          .select(
+            "id, artifact_type, title, summary, content, produced_by, version, review_status, updated_at",
+          )
           .eq("project_id", data.projectId)
           .eq("owner_id", context.userId)
           .order("updated_at", { ascending: false }),
