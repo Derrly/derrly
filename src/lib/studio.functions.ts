@@ -79,20 +79,6 @@ export const getProject = createServerFn({ method: "GET" })
   });
 
 // --- threads ---
-export const listThreads = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
-  .handler(async ({ data, context }) => {
-    const { data: threads, error } = await context.supabase
-      .from("threads")
-      .select("id, title, agent, updated_at")
-      .eq("project_id", data.projectId)
-      .eq("owner_id", context.userId)
-      .order("updated_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return threads ?? [];
-  });
-
 export const getStudioWorkspace = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
@@ -158,30 +144,6 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
     };
   });
 
-const CreateThread = z.object({
-  projectId: z.string().uuid(),
-  title: z.string().min(1).max(120),
-  agent: z.string().nullable().optional(),
-});
-
-export const createThread = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => CreateThread.parse(input))
-  .handler(async ({ data, context }) => {
-    const { data: thread, error } = await context.supabase
-      .from("threads")
-      .insert({
-        project_id: data.projectId,
-        owner_id: context.userId,
-        title: data.title,
-        agent: data.agent ?? null,
-      })
-      .select("id")
-      .single();
-    if (error || !thread) throw new Error(error?.message ?? "Failed to create thread");
-    return { id: thread.id };
-  });
-
 // --- messages ---
 export const listMessages = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -195,37 +157,6 @@ export const listMessages = createServerFn({ method: "GET" })
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return rows ?? [];
-  });
-
-const RenameThread = z.object({
-  threadId: z.string().uuid(),
-  title: z.string().min(1).max(120),
-});
-
-export const renameThread = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => RenameThread.parse(input))
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("threads")
-      .update({ title: data.title })
-      .eq("id", data.threadId)
-      .eq("owner_id", context.userId);
-    if (error) throw new Error(error.message);
-    return { ok: true };
-  });
-
-export const deleteThread = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ threadId: z.string().uuid() }).parse(input))
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("threads")
-      .delete()
-      .eq("id", data.threadId)
-      .eq("owner_id", context.userId);
-    if (error) throw new Error(error.message);
-    return { ok: true };
   });
 
 export const deleteProject = createServerFn({ method: "POST" })
