@@ -81,6 +81,7 @@ function ProjectPage() {
             key={workspace.data.threadId}
             projectId={projectId}
             threadId={workspace.data.threadId}
+            initialRequest={project.data?.prompt ?? ""}
             initialMessages={initialMessages}
           />
         ) : (
@@ -165,10 +166,12 @@ function StudioPanel({ workspace }: { workspace: Awaited<ReturnType<typeof getSt
 function ChatWindow({
   projectId,
   threadId,
+  initialRequest,
   initialMessages,
 }: {
   projectId: string;
   threadId: string;
+  initialRequest: string;
   initialMessages: UIMessage[];
 }) {
   const queryClient = useQueryClient();
@@ -211,6 +214,7 @@ function ChatWindow({
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const startedInitialRun = useRef(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -221,6 +225,12 @@ function ChatWindow({
   }, [threadId, status]);
 
   const busy = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    if (startedInitialRun.current || initialMessages.length > 0 || !initialRequest.trim()) return;
+    startedInitialRun.current = true;
+    void sendMessage({ text: initialRequest.trim() });
+  }, [initialMessages.length, initialRequest, sendMessage]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
