@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Plus, Loader2 } from "lucide-react";
 import { listProjects, createProject } from "@/lib/studio.functions";
+import { Button } from "@/components/ui/button";
 
 const EXAMPLES = [
   {
@@ -74,19 +75,21 @@ function Dashboard() {
         onSubmit={handleCreate}
         className="mt-10 rounded-2xl border hairline bg-card p-6"
       >
-        <label className="block text-xs font-medium uppercase tracking-widest text-muted-foreground">
+        <label htmlFor="project-title" className="block text-xs font-medium uppercase tracking-widest text-muted-foreground">
           Project title
         </label>
         <input
+          id="project-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Umbra Reach"
           className="mt-2 w-full bg-transparent text-2xl font-display text-foreground outline-none placeholder:text-muted-foreground/60"
         />
-        <label className="mt-6 block text-xs font-medium uppercase tracking-widest text-muted-foreground">
+        <label htmlFor="project-pitch" className="mt-6 block text-xs font-medium uppercase tracking-widest text-muted-foreground">
           One-sentence pitch
         </label>
         <textarea
+          id="project-pitch"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           rows={3}
@@ -95,14 +98,14 @@ function Dashboard() {
         />
         {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
         <div className="mt-4 flex justify-end">
-          <button
+          <Button
             type="submit"
             disabled={busy || !title.trim() || !prompt.trim()}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="rounded-full px-5"
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
             Spin up studio
-          </button>
+          </Button>
         </div>
       </form>
 
