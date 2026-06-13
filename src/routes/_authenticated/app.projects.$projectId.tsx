@@ -4,17 +4,13 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { ArrowLeft, Plus, Send, Loader2, Pencil, Trash2 } from "lucide-react";
-import {
-  getProject,
-  listThreads,
-  createThread,
-  listMessages,
-  renameThread,
-  deleteThread,
-} from "@/lib/studio.functions";
+import ReactMarkdown from "react-markdown";
+import { ArrowLeft, Send, Loader2, Check, Circle, FileText, Brain, Radio } from "lucide-react";
+import { getProject, getStudioWorkspace, listMessages } from "@/lib/studio.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { AGENTS } from "@/lib/derrly-data";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/app/projects/$projectId")({
   component: ProjectPage,
@@ -23,33 +19,27 @@ export const Route = createFileRoute("/_authenticated/app/projects/$projectId")(
 function ProjectPage() {
   const { projectId } = Route.useParams();
   const fetchProject = useServerFn(getProject);
-  const fetchThreads = useServerFn(listThreads);
+  const fetchWorkspace = useServerFn(getStudioWorkspace);
   const fetchMessages = useServerFn(listMessages);
-  const makeThread = useServerFn(createThread);
-  const renameFn = useServerFn(renameThread);
-  const deleteFn = useServerFn(deleteThread);
-  const qc = useQueryClient();
 
   const project = useQuery({
     queryKey: ["project", projectId],
     queryFn: () => fetchProject({ data: { projectId } }),
   });
-  const threads = useQuery({
-    queryKey: ["threads", projectId],
-    queryFn: () => fetchThreads({ data: { projectId } }),
+  const workspace = useQuery({
+    queryKey: ["studio-workspace", projectId],
+    queryFn: () => fetchWorkspace({ data: { projectId } }),
+    refetchInterval: 2500,
   });
 
-  const [activeId, setActiveId] = useState<string | null>(null);
-  useEffect(() => {
-    if (!activeId && threads.data && threads.data.length > 0) {
-      setActiveId(threads.data[0].id);
-    }
-  }, [threads.data, activeId]);
-
   const existing = useQuery({
-    queryKey: ["messages", activeId],
-    queryFn: () => fetchMessages({ data: { threadId: activeId! } }),
-    enabled: !!activeId,
+    queryKey: ["messages", workspace.data?.threadId],
+    queryFn: () => {
+      const threadId = workspace.data?.threadId;
+      if (!threadId) throw new Error("Executive Producer conversation not found");
+      return fetchMessages({ data: { threadId } });
+    },
+    enabled: Boolean(workspace.data?.threadId),
   });
 
   const initialMessages: UIMessage[] = useMemo(
@@ -62,32 +52,10 @@ function ProjectPage() {
     [existing.data],
   );
 
-  const handleAddAgent = async (agent: { id: string; name: string }) => {
-    const { id } = await makeThread({
-      data: { projectId, title: agent.name, agent: agent.id },
-    });
-    await qc.invalidateQueries({ queryKey: ["threads", projectId] });
-    setActiveId(id);
-  };
-
-  const handleRename = async (threadId: string, current: string) => {
-    const next = window.prompt("Rename thread", current);
-    if (!next || next.trim() === current) return;
-    await renameFn({ data: { threadId, title: next.trim() } });
-    await qc.invalidateQueries({ queryKey: ["threads", projectId] });
-  };
-
-  const handleDelete = async (threadId: string) => {
-    if (!window.confirm("Delete this thread and all its messages?")) return;
-    await deleteFn({ data: { threadId } });
-    if (activeId === threadId) setActiveId(null);
-    await qc.invalidateQueries({ queryKey: ["threads", projectId] });
-  };
-
   return (
-    <div className="mx-auto grid min-h-[calc(100dvh-3.5rem)] max-w-[1400px] grid-cols-1 lg:grid-cols-[260px_1fr]">
-      <aside className="border-b hairline lg:border-b-0 lg:border-r">
-        <div className="p-4">
+    <div className="mx-auto grid min-h-[calc(100dvh-3.5rem)] max-w-[1600px] grid-cols-1 xl:grid-cols-[minmax(0,1fr)_390px]">
+      <section className="flex min-h-[70dvh] min-w-0 flex-col border-b hairline xl:border-b-0 xl:border-r">
+        <header className="border-b hairline px-5 py-4 md:px-8">
           <Link
             to="/app"
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
@@ -95,92 +63,115 @@ function ProjectPage() {
             <ArrowLeft className="size-3" />
             All projects
           </Link>
-          <h2 className="mt-4 font-display text-xl text-foreground">
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Executive Producer</p>
+              <h1 className="mt-1 font-display text-3xl text-foreground">
             {project.data?.title ?? "Project"}
-          </h2>
-          <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">
-            {project.data?.prompt}
-          </p>
-        </div>
-
-        <div className="px-4 pb-4">
-          <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            Threads
-          </p>
-          <ul className="space-y-0.5">
-            {threads.data?.map((t) => (
-              <li key={t.id} className="group flex items-center gap-1">
-                <button
-                  onClick={() => setActiveId(t.id)}
-                  className={`flex-1 truncate rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
-                    activeId === t.id
-                      ? "bg-foreground text-background"
-                      : "text-foreground/80 hover:bg-surface"
-                  }`}
-                >
-                  {t.title}
-                </button>
-                <button
-                  onClick={() => handleRename(t.id, t.title)}
-                  aria-label={`Rename ${t.title}`}
-                  className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 focus:opacity-100"
-                >
-                  <Pencil className="size-3" />
-                </button>
-                <button
-                  onClick={() => handleDelete(t.id)}
-                  aria-label={`Delete ${t.title}`}
-                  className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100 focus:opacity-100"
-                >
-                  <Trash2 className="size-3" />
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          <p className="mb-2 mt-6 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            Add an agent
-          </p>
-          <ul className="space-y-0.5">
-            {AGENTS.map((a) => (
-              <li key={a.id}>
-                <button
-                  onClick={() => handleAddAgent(a)}
-                  className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
-                >
-                  <span>{a.name}</span>
-                  <Plus className="size-3" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </aside>
-
-      <section className="flex min-h-0 flex-col">
-        {activeId && existing.isSuccess ? (
+              </h1>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1 text-xs text-muted-foreground">
+              <span className={`size-1.5 rounded-full ${workspace.data?.run?.status === "running" ? "animate-pulse bg-foreground" : "bg-muted-foreground"}`} />
+              {workspace.data?.run?.status === "running" ? "Studio working" : project.data?.status ?? "Ready"}
+            </span>
+          </div>
+        </header>
+        {workspace.data?.threadId && existing.isSuccess ? (
           <ChatWindow
-            key={activeId}
-            threadId={activeId}
+            key={workspace.data.threadId}
+            projectId={projectId}
+            threadId={workspace.data.threadId}
             initialMessages={initialMessages}
           />
         ) : (
           <div className="flex flex-1 items-center justify-center p-12 text-sm text-muted-foreground">
-            {threads.isLoading ? "Loading studio…" : "Pick a thread to start."}
+            {workspace.isError || existing.isError ? "The studio could not be loaded." : "Opening the studio…"}
           </div>
         )}
       </section>
+
+      <StudioPanel workspace={workspace.data} />
     </div>
   );
 }
 
+function StudioPanel({ workspace }: { workspace: Awaited<ReturnType<typeof getStudioWorkspace>> | undefined }) {
+  const activities = workspace?.activities ?? [];
+  const artifacts = workspace?.artifacts ?? [];
+  const memory = workspace?.memory ?? [];
+  return (
+    <aside className="min-w-0 bg-surface/40">
+      <Tabs defaultValue="activity" className="sticky top-14">
+        <div className="border-b hairline px-4 py-3">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="activity"><Radio /> Live</TabsTrigger>
+            <TabsTrigger value="artifacts"><FileText /> Artifacts</TabsTrigger>
+            <TabsTrigger value="memory"><Brain /> Memory</TabsTrigger>
+          </TabsList>
+        </div>
+        <TabsContent value="activity" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
+          <div aria-live="polite">
+            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Studio activity</p>
+            {activities.length ? (
+              <ol className="mt-5 space-y-5">
+                {activities.map((activity) => {
+                  const agent = AGENTS.find((item) => item.id === activity.agent);
+                  return (
+                    <li key={activity.id} className="grid grid-cols-[18px_1fr] gap-3">
+                      <span className="mt-0.5 text-muted-foreground">
+                        {activity.status === "completed" ? <Check className="size-4" /> : <Circle className="size-3 animate-pulse fill-current" />}
+                      </span>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{agent?.name ?? activity.agent}</p>
+                        <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{activity.summary}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            ) : <p className="mt-4 text-sm text-muted-foreground">Your studio is ready. Give the Executive Producer a direction to begin.</p>}
+          </div>
+        </TabsContent>
+        <TabsContent value="artifacts" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Approved deliverables</p>
+          {artifacts.length ? <div className="mt-4 space-y-3">{artifacts.map((artifact) => (
+            <details key={artifact.id} className="group border-b hairline pb-3">
+              <summary className="cursor-pointer list-none py-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div><p className="text-sm font-medium text-foreground">{artifact.title}</p><p className="mt-1 text-xs text-muted-foreground">{AGENTS.find((a) => a.id === artifact.produced_by)?.name ?? artifact.produced_by}</p></div>
+                  <span className="rounded-full border hairline px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">v{artifact.version}</span>
+                </div>
+              </summary>
+              <div className="prose prose-sm mt-2 max-w-none text-sm leading-relaxed text-foreground [&_h1]:font-display [&_h2]:font-display [&_h3]:font-medium [&_li]:my-1 [&_p]:my-2">
+                <ReactMarkdown>{artifact.content && typeof artifact.content === "object" && !Array.isArray(artifact.content) && typeof artifact.content.markdown === "string" ? artifact.content.markdown : artifact.summary}</ReactMarkdown>
+              </div>
+            </details>
+          ))}</div> : <p className="mt-4 text-sm text-muted-foreground">Artifacts appear here as specialists complete and review their work.</p>}
+        </TabsContent>
+        <TabsContent value="memory" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Shared project state</p>
+          {memory.length ? <ul className="mt-4 divide-y hairline">{memory.map((item) => (
+            <li key={item.id} className="py-3">
+              <div className="flex items-center justify-between gap-3"><p className="text-sm font-medium text-foreground">{item.title}</p><span className="text-[10px] uppercase tracking-wider text-muted-foreground">{item.category}</span></div>
+              <p className="mt-1 text-xs text-muted-foreground">{AGENTS.find((a) => a.id === item.source_agent)?.name ?? item.source_agent} · v{item.version}</p>
+            </li>
+          ))}</ul> : null}
+        </TabsContent>
+      </Tabs>
+    </aside>
+  );
+}
+
 function ChatWindow({
+  projectId,
   threadId,
   initialMessages,
 }: {
+  projectId: string;
   threadId: string;
   initialMessages: UIMessage[];
 }) {
+  const queryClient = useQueryClient();
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -209,6 +200,12 @@ function ChatWindow({
     id: threadId,
     messages: initialMessages,
     transport,
+    onFinish: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
+        queryClient.invalidateQueries({ queryKey: ["project", projectId] }),
+      ]);
+    },
   });
 
   const [input, setInput] = useState("");
@@ -225,12 +222,12 @@ function ChatWindow({
 
   const busy = status === "submitted" || status === "streaming";
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const t = input.trim();
     if (!t || busy) return;
     setInput("");
-    sendMessage({ text: t });
+    await sendMessage({ text: t });
   };
 
   return (
@@ -259,17 +256,17 @@ function ChatWindow({
               return (
                 <li key={m.id} className="text-foreground">
                   <p className="mb-1 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                    Agent
+                    Executive Producer
                   </p>
-                  <div className="whitespace-pre-wrap text-base leading-relaxed">
-                    {text || (busy ? "Thinking…" : "")}
+                  <div className="prose max-w-none text-base leading-relaxed text-foreground prose-headings:font-display prose-p:my-3 prose-li:my-1">
+                    <ReactMarkdown>{text || (busy ? "Coordinating the studio…" : "")}</ReactMarkdown>
                   </div>
                 </li>
               );
             })}
             {busy && messages[messages.length - 1]?.role === "user" && (
               <li className="text-sm text-muted-foreground">
-                <Loader2 className="inline size-3 animate-spin" /> Agent is thinking…
+                <Loader2 className="inline size-3 animate-spin" /> Executive Producer is coordinating the studio…
               </li>
             )}
             {error && (
@@ -300,14 +297,15 @@ function ChatWindow({
             placeholder="Talk to the agent…"
             className="flex-1 resize-none bg-transparent px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
-          <button
+          <Button
             type="submit"
+            size="icon"
             disabled={busy || !input.trim()}
             aria-label="Send"
-            className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-opacity disabled:opacity-40"
+            className="shrink-0 rounded-full"
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-          </button>
+          </Button>
         </div>
       </form>
     </>
