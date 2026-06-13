@@ -9,6 +9,21 @@ type Body = {
   threadId?: string;
 };
 
+function parseLatestUserText(value: unknown) {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as { role?: unknown; parts?: unknown };
+  if (candidate.role !== "user" || !Array.isArray(candidate.parts)) return null;
+  const text = candidate.parts
+    .map((part) => {
+      if (!part || typeof part !== "object") return "";
+      const item = part as { type?: unknown; text?: unknown };
+      return item.type === "text" && typeof item.text === "string" ? item.text : "";
+    })
+    .join("")
+    .trim();
+  return text.length > 0 && text.length <= 4000 ? text : null;
+}
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
@@ -24,9 +39,8 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("messages and threadId are required", { status: 400 });
         }
         const latestClientMessage = messages[messages.length - 1];
-        if (!latestClientMessage || latestClientMessage.role !== "user") {
-          return new Response("A user message is required", { status: 400 });
-        }
+        const text = parseLatestUserText(latestClientMessage);
+        if (!text) return new Response("A valid user message is required", { status: 400 });
 
         const auth = request.headers.get("authorization") ?? "";
         if (!auth.startsWith("Bearer ")) {
@@ -62,20 +76,14 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Forbidden", { status: 403 });
         }
 
-        const text = latestClientMessage.parts
-          .map((part) => (part.type === "text" ? part.text : ""))
-          .join("")
-          .trim();
-        if (!text || text.length > 4000) {
-          return new Response("Message must be between 1 and 4000 characters", { status: 400 });
-        }
         const { error: userMessageError } = await supabase.from("messages").insert({
           thread_id: threadId,
           owner_id: userId,
           role: "user",
           content: text,
           parts: [{ type: "text", text }],
-          ai_message_id: latestClientMessage.id ?? null,
+          ai_message_id:
+            typeof latestClientMessage.id === "string" ? latestClientMessage.id : null,
         });
         if (userMessageError) {
           return new Response("Could not save your message", { status: 500 });
