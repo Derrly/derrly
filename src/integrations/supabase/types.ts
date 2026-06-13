@@ -14,6 +14,136 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_activities: {
+        Row: {
+          activity_type: string
+          agent: string
+          completed_at: string | null
+          created_at: string
+          details: Json
+          id: string
+          owner_id: string
+          project_id: string
+          run_id: string | null
+          sequence: number
+          status: string
+          summary: string
+        }
+        Insert: {
+          activity_type: string
+          agent: string
+          completed_at?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          owner_id: string
+          project_id: string
+          run_id?: string | null
+          sequence?: number
+          status?: string
+          summary: string
+        }
+        Update: {
+          activity_type?: string
+          agent?: string
+          completed_at?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          owner_id?: string
+          project_id?: string
+          run_id?: string | null
+          sequence?: number
+          status?: string
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_activities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_activities_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "studio_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_handoffs: {
+        Row: {
+          context: Json
+          created_at: string
+          from_agent: string
+          id: string
+          output_memory_id: string | null
+          owner_id: string
+          project_id: string
+          request_type: string
+          resolved_at: string | null
+          response: string | null
+          run_id: string | null
+          status: string
+          to_agent: string
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          from_agent: string
+          id?: string
+          output_memory_id?: string | null
+          owner_id: string
+          project_id: string
+          request_type: string
+          resolved_at?: string | null
+          response?: string | null
+          run_id?: string | null
+          status?: string
+          to_agent: string
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          from_agent?: string
+          id?: string
+          output_memory_id?: string | null
+          owner_id?: string
+          project_id?: string
+          request_type?: string
+          resolved_at?: string | null
+          response?: string | null
+          run_id?: string | null
+          status?: string
+          to_agent?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_handoffs_output_memory_id_fkey"
+            columns: ["output_memory_id"]
+            isOneToOne: false
+            referencedRelation: "project_memory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_handoffs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_handoffs_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "studio_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           ai_message_id: string | null
@@ -85,6 +215,122 @@ export type Database = {
         }
         Relationships: []
       }
+      project_artifacts: {
+        Row: {
+          artifact_type: string
+          content: Json
+          created_at: string
+          id: string
+          metadata: Json
+          owner_id: string
+          produced_by: string
+          project_id: string
+          review_status: string
+          run_id: string | null
+          summary: string
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          artifact_type: string
+          content?: Json
+          created_at?: string
+          id?: string
+          metadata?: Json
+          owner_id: string
+          produced_by: string
+          project_id: string
+          review_status?: string
+          run_id?: string | null
+          summary?: string
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          artifact_type?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          metadata?: Json
+          owner_id?: string
+          produced_by?: string
+          project_id?: string
+          review_status?: string
+          run_id?: string | null
+          summary?: string
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_artifacts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_artifacts_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "studio_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_memory: {
+        Row: {
+          category: string
+          content: Json
+          created_at: string
+          id: string
+          owner_id: string
+          project_id: string
+          source_agent: string
+          status: string
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          category: string
+          content?: Json
+          created_at?: string
+          id?: string
+          owner_id: string
+          project_id: string
+          source_agent: string
+          status?: string
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          category?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          owner_id?: string
+          project_id?: string
+          source_agent?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_memory_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
@@ -114,6 +360,59 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      studio_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          owner_id: string
+          phase: string
+          project_id: string
+          revision_count: number
+          started_at: string
+          status: string
+          task_graph: Json
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          owner_id: string
+          phase?: string
+          project_id: string
+          revision_count?: number
+          started_at?: string
+          status?: string
+          task_graph?: Json
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          owner_id?: string
+          phase?: string
+          project_id?: string
+          revision_count?: number
+          started_at?: string
+          status?: string
+          task_graph?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_runs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       threads: {
         Row: {
