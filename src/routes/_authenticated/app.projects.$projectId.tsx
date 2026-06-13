@@ -26,11 +26,46 @@ function ProjectPage() {
     queryKey: ["project", projectId],
     queryFn: () => fetchProject({ data: { projectId } }),
   });
+  const queryClient = useQueryClient();
   const workspace = useQuery({
     queryKey: ["studio-workspace", projectId],
     queryFn: () => fetchWorkspace({ data: { projectId } }),
-    refetchInterval: 2500,
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`studio:${projectId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "agent_activities", filter: `project_id=eq.${projectId}` },
+        () => queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "project_artifacts", filter: `project_id=eq.${projectId}` },
+        () => queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "project_memory", filter: `project_id=eq.${projectId}` },
+        () => queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "studio_runs", filter: `project_id=eq.${projectId}` },
+        () => queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "projects", filter: `id=eq.${projectId}` },
+        () => queryClient.invalidateQueries({ queryKey: ["project", projectId] }),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [projectId, queryClient]);
+
 
   const existing = useQuery({
     queryKey: ["messages", workspace.data?.threadId],

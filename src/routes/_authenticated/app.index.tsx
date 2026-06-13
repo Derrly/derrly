@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, Plus, Loader2 } from "lucide-react";
+import { ArrowUpRight, Plus, Loader2, X } from "lucide-react";
+
 import { listProjects, createProject } from "@/lib/studio.functions";
 import { Button } from "@/components/ui/button";
 
@@ -64,9 +65,11 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
+      <OnboardingCard />
       <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
         Your studio
       </p>
+
       <h1 className="mt-4 font-display text-5xl text-foreground md:text-6xl">
         What are we building today?
       </h1>
@@ -166,6 +169,49 @@ function Dashboard() {
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+const STEPS = [
+  { n: "01", t: "Describe a game", d: "One sentence pitch is enough. The Executive Producer briefs the studio." },
+  { n: "02", t: "Watch agents collaborate", d: "Design, World, Narrative, Gameplay, QA and Builder work in parallel — live." },
+  { n: "03", t: "Review artifacts", d: "Every deliverable lands in the workspace with version history." },
+  { n: "04", t: "Continue later", d: "Projects persist. Return any time and keep iterating with the studio." },
+];
+
+function OnboardingCard() {
+  const [hidden, setHidden] = useState(true);
+  useEffect(() => {
+    setHidden(localStorage.getItem("derrly.onboarded") === "1");
+  }, []);
+  if (hidden) return null;
+  return (
+    <div className="relative mb-10 rounded-2xl border hairline bg-surface/50 p-6">
+      <button
+        type="button"
+        aria-label="Dismiss"
+        onClick={() => {
+          localStorage.setItem("derrly.onboarded", "1");
+          setHidden(true);
+        }}
+        className="absolute right-4 top-4 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <X className="size-4" />
+      </button>
+      <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+        Welcome to Derrly
+      </p>
+      <h2 className="mt-2 font-display text-2xl text-foreground">How the studio works</h2>
+      <ol className="mt-5 grid gap-4 md:grid-cols-4">
+        {STEPS.map((s) => (
+          <li key={s.n}>
+            <p className="text-[10px] font-medium tracking-widest text-muted-foreground">{s.n}</p>
+            <p className="mt-1 text-sm font-medium text-foreground">{s.t}</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{s.d}</p>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
