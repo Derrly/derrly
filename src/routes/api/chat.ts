@@ -1,22 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { type UIMessage } from "ai";
 import { createClient } from "@supabase/supabase-js";
-import { createGroq, GROQ_MODEL } from "@/lib/groq.server";
-import { AGENTS } from "@/lib/derrly-data";
 import type { Database } from "@/integrations/supabase/types";
+import { runAutonomousStudio } from "@/lib/studio-orchestrator.server";
 
 type Body = {
   messages?: UIMessage[];
   threadId?: string;
 };
-
-function systemPromptForAgent(agent: string | null) {
-  const a = AGENTS.find((x) => x.id === agent);
-  const base =
-    "You are part of Derrly, an autonomous AI game studio of 14 specialist agents. Be concrete, opinionated, and concise. Always speak in the voice of your role. Reference the project brief when present.";
-  if (!a) return base;
-  return `${base}\n\nYou are the ${a.name} (${a.role}). Your responsibilities: ${a.responsibilities.join("; ")}. Your outputs: ${a.outputs.join(", ")}.`;
-}
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -52,13 +43,18 @@ export const Route = createFileRoute("/api/chat")({
         }
         const userId = claims.claims.sub;
 
-        // verify thread ownership + fetch agent
+        // Only the project's permanent Executive Producer conversation is user-facing.
         const { data: thread, error: threadErr } = await supabase
           .from("threads")
-          .select("id, agent, owner_id")
+          .select("id, agent, owner_id, project_id, projects(title, prompt)")
           .eq("id", threadId)
           .maybeSingle();
-        if (threadErr || !thread || thread.owner_id !== userId) {
+        if (
+          threadErr ||
+          !thread ||
+          thread.owner_id !== userId ||
+          thread.agent !== "executive-producer"
+        ) {
           return new Response("Forbidden", { status: 403 });
         }
 
@@ -68,7 +64,7 @@ export const Route = createFileRoute("/api/chat")({
           const text = last.parts
             .map((p) => (p.type === "text" ? p.text : ""))
             .join("");
-          await supabase.from("messages").insert({
+          const { error: userMessageError } = await supabase.from("messages").insert({
             thread_id: threadId,
             owner_id: userId,
             role: "user",
@@ -76,44 +72,67 @@ export const Route = createFileRoute("/api/chat")({
             parts: last.parts as unknown as Database["public"]["Tables"]["messages"]["Insert"]["parts"],
             ai_message_id: last.id ?? null,
           });
+          if (userMessageError) {
+            return new Response("Could not save your message", { status: 500 });
+          }
         }
 
-        let groq;
         try {
-          groq = createGroq();
-        } catch (e) {
-          return new Response((e as Error).message, { status: 500 });
+          const projects = thread.projects;
+          const project = Array.isArray(projects) ? projects[0] : projects;
+          const summary = await runAutonomousStudio({
+            supabase,
+            projectId: thread.project_id,
+            userId,
+            projectTitle: project?.title ?? "Untitled game",
+            projectPrompt: project?.prompt ?? null,
+            messages,
+          });
+          const assistantId = crypto.randomUUID();
+          const assistantParts = [{ type: "text" as const, text: summary }];
+          const { error: assistantError } = await supabase.from("messages").insert({
+            thread_id: threadId,
+            owner_id: userId,
+            role: "assistant",
+            content: summary,
+            parts: assistantParts,
+            model: "derrly-orchestrator-v1",
+            ai_message_id: assistantId,
+          });
+          if (assistantError) throw new Error(assistantError.message);
+          const { error: threadUpdateError } = await supabase
+            .from("threads")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", threadId);
+          if (threadUpdateError) throw new Error(threadUpdateError.message);
+
+          const stream = new ReadableStream({
+            start(controller) {
+              const encoder = new TextEncoder();
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "start", messageId: assistantId })}\n\n`));
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "text-start", id: "summary" })}\n\n`));
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "text-delta", id: "summary", delta: summary })}\n\n`));
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "text-end", id: "summary" })}\n\n`));
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "finish" })}\n\n`));
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+              controller.close();
+            },
+          });
+          return new Response(stream, {
+            headers: {
+              "content-type": "text/event-stream",
+              "cache-control": "no-cache",
+              "x-vercel-ai-ui-message-stream": "v1",
+            },
+          });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Studio orchestration failed";
+          await supabase
+            .from("projects")
+            .update({ status: "needs-attention" })
+            .eq("id", thread.project_id);
+          return new Response(message, { status: 500 });
         }
-
-        const result = streamText({
-          model: groq(GROQ_MODEL),
-          system: systemPromptForAgent(thread.agent),
-          messages: await convertToModelMessages(messages),
-        });
-
-        return result.toUIMessageStreamResponse({
-          originalMessages: messages,
-          onFinish: async ({ messages: finalMessages }) => {
-            const assistant = finalMessages[finalMessages.length - 1];
-            if (!assistant || assistant.role !== "assistant") return;
-            const text = assistant.parts
-              .map((p) => (p.type === "text" ? p.text : ""))
-              .join("");
-            await supabase.from("messages").insert({
-              thread_id: threadId,
-              owner_id: userId,
-              role: "assistant",
-              content: text,
-              parts: assistant.parts as unknown as Database["public"]["Tables"]["messages"]["Insert"]["parts"],
-              model: GROQ_MODEL,
-              ai_message_id: assistant.id ?? null,
-            });
-            await supabase
-              .from("threads")
-              .update({ updated_at: new Date().toISOString() })
-              .eq("id", threadId);
-          },
-        });
       },
     },
   },
