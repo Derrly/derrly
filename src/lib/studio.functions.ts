@@ -22,6 +22,7 @@ export const listProjects = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("projects")
       .select("id, title, prompt, status, updated_at")
+      .eq("owner_id", context.userId)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -81,6 +82,7 @@ export const getProject = createServerFn({ method: "GET" })
       .from("projects")
       .select("id, title, prompt, status, created_at, updated_at")
       .eq("id", data.projectId)
+      .eq("owner_id", context.userId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!project) throw new Error("Project not found");
@@ -96,6 +98,7 @@ export const listThreads = createServerFn({ method: "GET" })
       .from("threads")
       .select("id, title, agent, updated_at")
       .eq("project_id", data.projectId)
+      .eq("owner_id", context.userId)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
     return threads ?? [];
@@ -111,6 +114,7 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
           .from("threads")
           .select("id")
           .eq("project_id", data.projectId)
+          .eq("owner_id", context.userId)
           .eq("agent", "executive-producer")
           .order("created_at", { ascending: true })
           .limit(1)
@@ -119,17 +123,20 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
           .from("agent_activities")
           .select("id, agent, activity_type, status, summary, created_at, completed_at")
           .eq("project_id", data.projectId)
+          .eq("owner_id", context.userId)
           .order("created_at", { ascending: false })
           .limit(80),
         context.supabase
           .from("project_artifacts")
           .select("id, artifact_type, title, summary, content, produced_by, version, review_status, updated_at")
           .eq("project_id", data.projectId)
+          .eq("owner_id", context.userId)
           .order("updated_at", { ascending: false }),
         context.supabase
           .from("studio_runs")
           .select("id, status, phase, revision_count, started_at, completed_at")
           .eq("project_id", data.projectId)
+          .eq("owner_id", context.userId)
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
@@ -137,6 +144,7 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
           .from("project_memory")
           .select("id, category, title, source_agent, version, status, updated_at")
           .eq("project_id", data.projectId)
+          .eq("owner_id", context.userId)
           .order("updated_at", { ascending: false })
           .limit(40),
       ]);
@@ -192,6 +200,7 @@ export const listMessages = createServerFn({ method: "GET" })
       .from("messages")
       .select("id, role, content, created_at")
       .eq("thread_id", data.threadId)
+      .eq("owner_id", context.userId)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return rows ?? [];
@@ -209,7 +218,8 @@ export const renameThread = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("threads")
       .update({ title: data.title })
-      .eq("id", data.threadId);
+      .eq("id", data.threadId)
+      .eq("owner_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -218,8 +228,11 @@ export const deleteThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ threadId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    await context.supabase.from("messages").delete().eq("thread_id", data.threadId);
-    const { error } = await context.supabase.from("threads").delete().eq("id", data.threadId);
+    const { error } = await context.supabase
+      .from("threads")
+      .delete()
+      .eq("id", data.threadId)
+      .eq("owner_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -231,7 +244,8 @@ export const deleteProject = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("projects")
       .delete()
-      .eq("id", data.projectId);
+      .eq("id", data.projectId)
+      .eq("owner_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

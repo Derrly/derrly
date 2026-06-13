@@ -23,6 +23,10 @@ export const Route = createFileRoute("/api/chat")({
         if (!Array.isArray(messages) || !threadId) {
           return new Response("messages and threadId are required", { status: 400 });
         }
+        const latestClientMessage = messages[messages.length - 1];
+        if (!latestClientMessage || latestClientMessage.role !== "user") {
+          return new Response("A user message is required", { status: 400 });
+        }
 
         const auth = request.headers.get("authorization") ?? "";
         if (!auth.startsWith("Bearer ")) {
@@ -58,24 +62,39 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Forbidden", { status: 403 });
         }
 
-        // persist the latest user message
-        const last = messages[messages.length - 1];
-        if (last?.role === "user") {
-          const text = last.parts
-            .map((p) => (p.type === "text" ? p.text : ""))
-            .join("");
-          const { error: userMessageError } = await supabase.from("messages").insert({
-            thread_id: threadId,
-            owner_id: userId,
-            role: "user",
-            content: text,
-            parts: last.parts as unknown as Database["public"]["Tables"]["messages"]["Insert"]["parts"],
-            ai_message_id: last.id ?? null,
-          });
-          if (userMessageError) {
-            return new Response("Could not save your message", { status: 500 });
-          }
+        const text = latestClientMessage.parts
+          .map((part) => (part.type === "text" ? part.text : ""))
+          .join("")
+          .trim();
+        if (!text || text.length > 4000) {
+          return new Response("Message must be between 1 and 4000 characters", { status: 400 });
         }
+        const { error: userMessageError } = await supabase.from("messages").insert({
+          thread_id: threadId,
+          owner_id: userId,
+          role: "user",
+          content: text,
+          parts: [{ type: "text", text }],
+          ai_message_id: latestClientMessage.id ?? null,
+        });
+        if (userMessageError) {
+          return new Response("Could not save your message", { status: 500 });
+        }
+
+        const { data: canonicalRows, error: canonicalError } = await supabase
+          .from("messages")
+          .select("id, role, content, parts")
+          .eq("thread_id", threadId)
+          .eq("owner_id", userId)
+          .order("created_at", { ascending: true });
+        if (canonicalError) {
+          return new Response("Could not load the conversation", { status: 500 });
+        }
+        const canonicalMessages: UIMessage[] = (canonicalRows ?? []).map((row) => ({
+          id: row.id,
+          role: row.role as "user" | "assistant" | "system",
+          parts: [{ type: "text", text: row.content }],
+        }));
 
         try {
           const projects = thread.projects;
@@ -86,7 +105,7 @@ export const Route = createFileRoute("/api/chat")({
             userId,
             projectTitle: project?.title ?? "Untitled game",
             projectPrompt: project?.prompt ?? null,
-            messages,
+            messages: canonicalMessages,
           });
           const assistantId = crypto.randomUUID();
           const assistantParts = [{ type: "text" as const, text: summary }];
