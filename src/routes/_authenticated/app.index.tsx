@@ -65,9 +65,11 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
+      <OnboardingCard />
       <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
         Your studio
       </p>
+
       <h1 className="mt-4 font-display text-5xl text-foreground md:text-6xl">
         What are we building today?
       </h1>
