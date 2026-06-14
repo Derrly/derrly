@@ -15,6 +15,30 @@ export const getMyProfile = createServerFn({ method: "GET" })
     return data;
   });
 
+const UpdateProfile = z.object({
+  displayName: z.string().trim().min(1).max(80),
+  studioName: z.string().trim().max(100),
+  avatarUrl: z.union([z.string().trim().url().max(2048), z.literal("")]),
+});
+
+export const updateMyProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => UpdateProfile.parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: profile, error } = await context.supabase
+      .from("profiles")
+      .upsert({
+        id: context.userId,
+        display_name: data.displayName,
+        studio_name: data.studioName || null,
+        avatar_url: data.avatarUrl || null,
+      })
+      .select("id, display_name, studio_name, avatar_url")
+      .single();
+    if (error) throw new Error(error.message);
+    return profile;
+  });
+
 // --- projects ---
 export const listProjects = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
