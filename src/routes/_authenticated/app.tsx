@@ -1,5 +1,8 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { CircleUserRound, CreditCard, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/app")({
   component: AppShell,
@@ -7,8 +10,11 @@ export const Route = createFileRoute("/_authenticated/app")({
 
 function AppShell() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   };
@@ -21,12 +27,20 @@ function AppShell() {
             <span aria-hidden className="inline-block size-2 rounded-full bg-foreground" />
             Derrly studio
           </Link>
-          <button
-            onClick={signOut}
-            className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Sign out
-          </button>
+          <nav className="flex items-center gap-1" aria-label="Studio account">
+            <Link to="/pricing" className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <CreditCard className="size-4" />
+              <span className="hidden sm:inline">Plans</span>
+            </Link>
+            <Link to="/app/profile" className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+              <CircleUserRound className="size-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </Link>
+            <Button type="button" variant="ghost" size="sm" onClick={signOut} className="rounded-full text-muted-foreground hover:text-foreground">
+              <LogOut className="size-4" />
+              <span className="hidden sm:inline">Sign out</span>
+            </Button>
+          </nav>
         </div>
       </header>
       <main className="flex-1">

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/agents", label: "Agents" },
@@ -13,12 +14,19 @@ const NAV = [
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    void supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => setSignedIn(Boolean(session)));
+    return () => data.subscription.unsubscribe();
   }, []);
 
   return (
@@ -48,16 +56,16 @@ export function Nav() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Link
-            to="/auth"
+            to={signedIn ? "/app/profile" : "/auth"}
             className="rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            Sign in
+            {signedIn ? "Profile" : "Sign in"}
           </Link>
           <Link
-            to="/auth"
+            to={signedIn ? "/app" : "/auth"}
             className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
           >
-            Get access
+            {signedIn ? "Open studio" : "Get access"}
           </Link>
         </div>
 
@@ -87,15 +95,15 @@ export function Nav() {
               </Link>
             ))}
             <div className="mt-2 flex gap-2 border-t hairline pt-4">
-              <Link to="/auth" onClick={() => setOpen(false)} className="flex-1 rounded-full border hairline px-4 py-2 text-center text-sm">
-                Sign in
+              <Link to={signedIn ? "/app/profile" : "/auth"} onClick={() => setOpen(false)} className="flex-1 rounded-full border hairline px-4 py-2 text-center text-sm">
+                {signedIn ? "Profile" : "Sign in"}
               </Link>
               <Link
-                to="/auth"
+                to={signedIn ? "/app" : "/auth"}
                 onClick={() => setOpen(false)}
                 className="flex-1 rounded-full bg-foreground px-4 py-2 text-center text-sm font-medium text-background"
               >
-                Get access
+                {signedIn ? "Open studio" : "Get access"}
               </Link>
             </div>
 
