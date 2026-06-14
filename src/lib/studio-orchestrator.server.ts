@@ -124,7 +124,7 @@ export async function runAutonomousStudio({
     model: groq(GROQ_MODEL),
     output: Output.object({ schema: PlanSchema }),
     system:
-      "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists.",
+      "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists. Return valid JSON matching the provided response schema.",
     prompt: `Project: ${projectTitle}\nOriginal pitch: ${projectPrompt ?? ""}\nLatest direction: ${latestRequest}\nShared memory: ${memoryContext}`,
   });
   const plan = planResult.output;
@@ -288,7 +288,7 @@ export async function runAutonomousStudio({
     model: groq(GROQ_MODEL),
     output: Output.object({ schema: ReviewSchema }),
     system:
-      "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction.",
+      "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction. Return valid JSON matching the provided response schema.",
     prompt: `Brief: ${plan.brief}\n\nDeliverables:\n${reviewTargets.map(([agent, output]) => `${agent}:\n${output}`).join("\n\n")}`,
   });
   const review = reviewResult.output;
