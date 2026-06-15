@@ -125,7 +125,7 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const [threadResult, activityResult, artifactResult, runResult, memoryResult, handoffResult, intelligenceResult, qualityResult, buildResult, reviewResult, eventResult] =
+    const [threadResult, activityResult, artifactResult, runResult, memoryResult, handoffResult, intelligenceResult, qualityResult, buildResult, reviewResult, eventResult, messagesResult] =
       await Promise.all([
         context.supabase
           .from("threads")
