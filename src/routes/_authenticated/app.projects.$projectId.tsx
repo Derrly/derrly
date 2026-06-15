@@ -223,16 +223,73 @@ function StudioPanel({
         </TabsContent>
         <TabsContent value="war-room" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
           <SectionLabel>Studio meeting</SectionLabel>
-          {handoffs.length ? <ol className="mt-5 space-y-4">{handoffs.map((handoff) => <li key={handoff.id} className="border-l-2 hairline pl-4"><p className="text-xs font-medium text-foreground">{agentName(handoff.from_agent)} <ArrowRight className="mx-1 inline size-3" /> {agentName(handoff.to_agent)}</p><p className="mt-1 text-sm text-muted-foreground">{handoffText(handoff)}</p><span className="mt-2 inline-block rounded-full border hairline px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">{handoff.status.replaceAll("_", " ")}</span></li>)}</ol> : <EmptyText>Agent discussions, reviews, and revisions will appear during production.</EmptyText>}
+          {agentMessages.length || handoffs.length ? (
+            <ol className="mt-5 space-y-4">
+              {agentMessages.map((msg) => (
+                <li key={msg.id} className="rounded-lg border hairline p-3">
+                  <p className="text-xs font-medium text-foreground">
+                    {agentName(msg.from_agent)}
+                    {msg.to_agent ? <> <ArrowRight className="mx-1 inline size-3" /> {agentName(msg.to_agent)}</> : null}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{msg.body}</p>
+                  <span className="mt-2 inline-block rounded-full border hairline px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">{msg.kind}</span>
+                </li>
+              ))}
+              {handoffs.map((handoff) => (
+                <li key={handoff.id} className="border-l-2 hairline pl-4">
+                  <p className="text-xs font-medium text-foreground">{agentName(handoff.from_agent)} <ArrowRight className="mx-1 inline size-3" /> {agentName(handoff.to_agent)}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{handoffText(handoff)}</p>
+                  <span className="mt-2 inline-block rounded-full border hairline px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">{handoff.status.replaceAll("_", " ")}</span>
+                </li>
+              ))}
+            </ol>
+          ) : <EmptyText>Agent discussions, reviews, and revisions will appear during production.</EmptyText>}
         </TabsContent>
         <TabsContent value="quality" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
           <SectionLabel>Generation quality</SectionLabel>
-          {quality.length ? <><div className="mt-4 rounded-xl border hairline p-4"><p className="text-xs uppercase tracking-widest text-muted-foreground">Overall project score</p><p className="mt-2 font-display text-5xl text-foreground">{averageQuality}%</p></div><ul className="mt-4 divide-y hairline">{quality.map((item) => <li key={item.id} className="py-4"><div className="flex items-baseline justify-between gap-3"><p className="text-sm font-medium capitalize text-foreground">{item.discipline}</p><strong className="font-display text-2xl font-normal">{item.score}%</strong></div><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.summary}</p></li>)}</ul></> : <EmptyText>Rubric scores appear after QA reviews the production package.</EmptyText>}
+          {quality.length ? (
+            <>
+              <div className="mt-4 rounded-xl border hairline p-4">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">Overall project score</p>
+                <p className="mt-2 font-display text-5xl text-foreground">{averageQuality}%</p>
+              </div>
+              {overallAxes ? (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {Object.entries(overallAxes).map(([axis, score]) => (
+                    <div key={axis} className="rounded-lg border hairline p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{axis}</p>
+                      <div className="mt-2 flex items-baseline justify-between">
+                        <span className="font-display text-2xl text-foreground">{score}</span>
+                        <div className="ml-2 h-1.5 flex-1 overflow-hidden rounded-full bg-hairline">
+                          <div className="h-full bg-foreground" style={{ width: `${score}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              <ul className="mt-4 divide-y hairline">
+                {quality.map((item) => (
+                  <li key={item.id} className="py-4">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="text-sm font-medium capitalize text-foreground">{item.discipline}</p>
+                      <strong className="font-display text-2xl font-normal">{item.score}%</strong>
+                    </div>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.summary}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : <EmptyText>Rubric scores appear after QA reviews the production package.</EmptyText>}
         </TabsContent>
         <TabsContent value="prototype" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
           <SectionLabel>Prototype center</SectionLabel>
           {build ? <><div className="mt-4 flex items-center justify-between rounded-xl border hairline p-4"><div><p className="text-sm font-medium text-foreground">Build v{build.version}</p><p className="mt-1 text-xs text-muted-foreground">Design specification</p></div><span className="rounded-full border hairline px-2 py-1 text-[10px] uppercase tracking-widest">{build.status}</span></div><BuildSection title="Gameplay overview" content={build.gameplay_overview} /><BuildSection title="Core loop" content={build.core_loop} /><BuildSection title="World overview" content={build.world_overview} /><BuildSection title="Quest overview" content={build.quest_overview} /></> : <EmptyText>The Game Builder has not produced a build specification yet.</EmptyText>}
         </TabsContent>
+        <TabsContent value="knowledge" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
+          <KnowledgePanel projectId={projectId} />
+        </TabsContent>
+
         <TabsContent
           value="artifacts"
           className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5"
