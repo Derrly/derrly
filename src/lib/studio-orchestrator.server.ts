@@ -358,6 +358,74 @@ export async function runAutonomousStudio({
     );
   }
 
+  const evidenceText = [...outputs.entries()]
+    .map(([agent, output]) => `${agent}: ${output.slice(0, 2500)}`)
+    .join("\n\n");
+  const [intelligenceResult, qualityResult] = await Promise.all([
+    generateText({
+      model: groq(GROQ_MODEL),
+      output: Output.object({ schema: IntelligenceSchema }),
+      system: "You are Derrly's Executive Producer reporting project intelligence. Assess only the supplied evidence. Scores must be 0-100. Identify concrete risks, gaps, incomplete content, and actionable next steps. Return valid JSON matching the schema.",
+      prompt: `Brief: ${plan.brief}\nQA review: ${review?.critique ?? "Approved without critique"}\nProduction evidence:\n${evidenceText}`,
+      ...modelGuard(),
+    }),
+    generateText({
+      model: groq(GROQ_MODEL),
+      output: Output.object({ schema: QualitySchema }),
+      system: "You are Derrly's quality board. Score only disciplines evidenced by the supplied work. Use concise discipline names, 0-100 scores, evidence-based summaries, and concrete findings. Return valid JSON matching the schema.",
+      prompt: `Project brief: ${plan.brief}\nProduction evidence:\n${evidenceText}`,
+      ...modelGuard(),
+    }),
+  ]);
+  const intelligence = intelligenceResult.output;
+  const quality = qualityResult.output;
+  if (intelligence) {
+    await must(supabase.from("project_intelligence").insert({
+      project_id: projectId,
+      run_id: run.id,
+      owner_id: userId,
+      health_score: clampScore(intelligence.healthScore),
+      progress_percent: clampScore(intelligence.progressPercent),
+      current_state: intelligence.currentState,
+      biggest_risks: intelligence.biggestRisks,
+      missing_systems: intelligence.missingSystems,
+      incomplete_content: intelligence.incompleteContent,
+      recommended_actions: intelligence.recommendedActions,
+      evidence: { review: review?.critique ?? "Approved", agents: [...outputs.keys()] },
+    }));
+  }
+  if (quality?.reviews.length) {
+    await must(supabase.from("quality_reviews").insert(quality.reviews.map((item) => ({
+      project_id: projectId,
+      run_id: run.id,
+      owner_id: userId,
+      discipline: item.discipline,
+      score: clampScore(item.score),
+      status: item.score >= 80 ? "approved" : "revision_requested",
+      summary: item.summary,
+      findings: item.findings,
+      evidence: { sourceAgents: [...outputs.keys()] },
+    }))));
+  }
+  const builderOutput = outputs.get("game-builder") ?? "Build specification pending.";
+  await must(supabase.from("build_records").insert({
+    project_id: projectId,
+    run_id: run.id,
+    owner_id: userId,
+    status: "specification",
+    gameplay_overview: outputs.get("gameplay-engineer")?.slice(0, 1800) ?? plan.brief,
+    core_loop: outputs.get("creative-director")?.slice(0, 1800) ?? plan.brief,
+    world_overview: outputs.get("world-architect")?.slice(0, 1800) ?? "World design not included in this cycle.",
+    quest_overview: outputs.get("quest-designer")?.slice(0, 1800) ?? "Quest design not included in this cycle.",
+    manifest: { type: "design-specification", agents: [...outputs.keys()], builderSpecification: builderOutput.slice(0, 4000) },
+    logs: ["Production artifacts assembled", "Cross-discipline review completed", "Build specification recorded"],
+  }));
+  await must(supabase.from("project_events").insert([
+    { project_id: projectId, run_id: run.id, owner_id: userId, actor_type: "agent", actor: "executive-producer", event_type: "brief_created", summary: "Executive Producer created the production brief", details: { taskCount: plan.tasks.length } },
+    ...plan.tasks.map((task) => ({ project_id: projectId, run_id: run.id, owner_id: userId, actor_type: "agent", actor: task.agent, event_type: task.agent === "qa-tester" ? "qa_completed" : task.agent === "game-builder" ? "build_specified" : "deliverable_completed", summary: `${AGENTS.find((agent) => agent.id === task.agent)?.name ?? task.agent} completed ${task.objective}`, details: { dependencies: task.dependsOn } })),
+    { project_id: projectId, run_id: run.id, owner_id: userId, actor_type: "agent", actor: "executive-producer", event_type: "run_approved", summary: "Executive Producer approved the production cycle", details: { revised: Boolean(review && !review.approved) } },
+  ]));
+
   await must(
     supabase
       .from("studio_runs")
