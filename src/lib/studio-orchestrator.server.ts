@@ -84,9 +84,34 @@ const IntelligenceSchema = z.object({
   recommendedActions: z.array(z.string()),
 });
 
+const QUALITY_AXES = [
+  "creativity",
+  "gameplay",
+  "replayability",
+  "clarity",
+  "balance",
+  "feasibility",
+  "enjoyment",
+] as const;
+
 const QualitySchema = z.object({
-  reviews: z.array(z.object({ discipline: z.string(), score: z.number(), summary: z.string(), findings: z.array(z.string()) })),
+  reviews: z.array(z.object({
+    discipline: z.string(),
+    score: z.number(),
+    summary: z.string(),
+    findings: z.array(z.string()),
+    axes: z.object({
+      creativity: z.number(),
+      gameplay: z.number(),
+      replayability: z.number(),
+      clarity: z.number(),
+      balance: z.number(),
+      feasibility: z.number(),
+      enjoyment: z.number(),
+    }),
+  })),
 });
+
 
 const clampScore = (score: number) => Math.max(0, Math.min(100, Math.round(score)));
 const modelGuard = () => ({ abortSignal: AbortSignal.timeout(25_000), maxOutputTokens: 4_000 });
@@ -125,27 +150,38 @@ export async function runAutonomousStudio({
 }) {
   const groq = createGroq();
   const latestRequest = messageText(messages[messages.length - 1]);
-  const existingMemory = await must(
+  const [existingMemory, prefsRow] = await Promise.all([
+    must(
+      supabase
+        .from("project_memory")
+        .select("category, title, content, source_agent, version")
+        .eq("project_id", projectId)
+        .eq("status", "approved")
+        .order("updated_at", { ascending: false })
+        .limit(20),
+    ),
     supabase
-      .from("project_memory")
-      .select("category, title, content, source_agent, version")
-      .eq("project_id", projectId)
-      .eq("status", "approved")
-      .order("updated_at", { ascending: false })
-      .limit(20),
-  );
+      .from("user_preferences")
+      .select("favorite_genres, design_patterns, tone, notes")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
   const memoryContext = existingMemory.length
     ? JSON.stringify([...existingMemory].reverse()).slice(0, 32_000)
     : "No prior approved project memory exists.";
+  const preferencesContext = prefsRow.data
+    ? `User preferences — favorite genres: ${(prefsRow.data.favorite_genres ?? []).join(", ") || "n/a"}; tone: ${prefsRow.data.tone ?? "n/a"}; notes: ${prefsRow.data.notes ?? "n/a"}.`
+    : "No saved user preferences.";
 
   const planResult = await generateText({
     model: groq(GROQ_MODEL),
     output: Output.object({ schema: PlanSchema }),
     system:
-      "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists. Return valid JSON matching the provided response schema.",
-    prompt: `Project: ${projectTitle}\nOriginal pitch: ${projectPrompt ?? ""}\nLatest direction: ${latestRequest}\nShared memory: ${memoryContext}`,
+      "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists. Honor user preferences when relevant. Return valid JSON matching the provided response schema.",
+    prompt: `Project: ${projectTitle}\nOriginal pitch: ${projectPrompt ?? ""}\nLatest direction: ${latestRequest}\n${preferencesContext}\nShared memory: ${memoryContext}`,
     ...modelGuard(),
   });
+
   const plan = planResult.output;
   if (!plan) throw new Error("The Executive Producer could not create a production plan.");
 
@@ -301,19 +337,39 @@ export async function runAutonomousStudio({
     }
   }
 
-  const reviewTargets = [...outputs.entries()].filter(
+  const reviewTargets = () => [...outputs.entries()].filter(
     ([agent]) => agent !== "qa-tester" && agent !== "game-builder",
   );
-  const reviewResult = await generateText({
-    model: groq(GROQ_MODEL),
-    output: Output.object({ schema: ReviewSchema }),
-    system:
-      "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction. Return valid JSON matching the provided response schema.",
-    prompt: `Brief: ${plan.brief}\n\nDeliverables:\n${reviewTargets.map(([agent, output]) => `${agent}:\n${output}`).join("\n\n")}`,
-    ...modelGuard(),
-  });
-  const review = reviewResult.output;
-  if (review && !review.approved && outputs.has(review.revisionTarget)) {
+  let review: z.infer<typeof ReviewSchema> | undefined;
+  let revisionCount = 0;
+  const MAX_REVISIONS = 3;
+  for (let cycle = 0; cycle < MAX_REVISIONS; cycle++) {
+    const targets = reviewTargets();
+    const reviewResult = await generateText({
+      model: groq(GROQ_MODEL),
+      output: Output.object({ schema: ReviewSchema }),
+      system:
+        "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction. Return valid JSON matching the provided response schema.",
+      prompt: `Brief: ${plan.brief}\n\nDeliverables:\n${targets.map(([agent, output]) => `${agent}:\n${output}`).join("\n\n")}`,
+      ...modelGuard(),
+    });
+    review = reviewResult.output;
+    if (!review) break;
+    await must(
+      supabase.from("agent_messages").insert({
+        project_id: projectId,
+        run_id: run.id,
+        owner_id: userId,
+        from_agent: "qa-tester",
+        to_agent: review.approved ? null : review.revisionTarget,
+        kind: review.approved ? "approval" : "critique",
+        body: review.approved
+          ? `Approved cross-discipline review for cycle ${cycle + 1}.`
+          : `Cycle ${cycle + 1}: ${review.critique}`,
+      }),
+    );
+    if (review.approved || !outputs.has(review.revisionTarget)) break;
+    revisionCount++;
     await must(
       supabase.from("agent_handoffs").insert({
         project_id: projectId,
@@ -323,13 +379,13 @@ export async function runAutonomousStudio({
         to_agent: review.revisionTarget,
         request_type: "revision",
         status: "revision_requested",
-        context: { critique: review.critique, instruction: review.revisionInstruction },
+        context: { critique: review.critique, instruction: review.revisionInstruction, cycle: cycle + 1 },
       }),
     );
     const revision = await generateText({
       model: groq(GROQ_MODEL),
       system: agentPrompt(review.revisionTarget),
-      prompt: `Revise your deliverable in response to this review.\nCritique: ${review.critique}\nRequired correction: ${review.revisionInstruction}\nPrevious deliverable:\n${outputs.get(review.revisionTarget)}`,
+      prompt: `Revise your deliverable in response to this review (cycle ${cycle + 1} of ${MAX_REVISIONS}).\nCritique: ${review.critique}\nRequired correction: ${review.revisionInstruction}\nPrevious deliverable:\n${outputs.get(review.revisionTarget)}`,
       ...modelGuard(),
     });
     outputs.set(review.revisionTarget, revision.text);
@@ -338,10 +394,21 @@ export async function runAutonomousStudio({
         project_id: projectId,
         owner_id: userId,
         category: "revision",
-        title: `${review.revisionTarget} approved revision`,
-        content: { markdown: revision.text, critique: review.critique },
+        title: `${review.revisionTarget} revision cycle ${cycle + 1}`,
+        content: { markdown: revision.text, critique: review.critique, cycle: cycle + 1 },
         source_agent: review.revisionTarget,
         status: "approved",
+      }),
+    );
+    await must(
+      supabase.from("agent_messages").insert({
+        project_id: projectId,
+        run_id: run.id,
+        owner_id: userId,
+        from_agent: review.revisionTarget,
+        to_agent: "qa-tester",
+        kind: "revision",
+        body: `Submitted revision for cycle ${cycle + 1}. ${review.revisionInstruction}`,
       }),
     );
     await must(
@@ -353,11 +420,12 @@ export async function runAutonomousStudio({
         activity_type: "revision",
         status: "completed",
         summary: review.revisionInstruction,
-        sequence: plan.tasks.length + 1,
+        sequence: plan.tasks.length + cycle + 1,
         completed_at: new Date().toISOString(),
       }),
     );
   }
+
 
   const evidenceText = [...outputs.entries()]
     .map(([agent, output]) => `${agent}: ${output.slice(0, 2500)}`)
@@ -380,6 +448,19 @@ export async function runAutonomousStudio({
   ]);
   const intelligence = intelligenceResult.output;
   const quality = qualityResult.output;
+  const qualityBreakdown: Record<string, Record<string, number>> = {};
+  if (quality?.reviews.length) {
+    for (const item of quality.reviews) {
+      qualityBreakdown[item.discipline] = Object.fromEntries(
+        QUALITY_AXES.map((axis) => [axis, clampScore(item.axes[axis] ?? item.score)]),
+      );
+    }
+  }
+  const overallAxes = QUALITY_AXES.reduce<Record<string, number>>((acc, axis) => {
+    const values = Object.values(qualityBreakdown).map((row) => row[axis]).filter((v) => typeof v === "number");
+    acc[axis] = values.length ? clampScore(values.reduce((a, b) => a + b, 0) / values.length) : 0;
+    return acc;
+  }, {});
   if (intelligence) {
     await must(supabase.from("project_intelligence").insert({
       project_id: projectId,
@@ -387,11 +468,13 @@ export async function runAutonomousStudio({
       owner_id: userId,
       health_score: clampScore(intelligence.healthScore),
       progress_percent: clampScore(intelligence.progressPercent),
+      completion_percent: clampScore(intelligence.progressPercent),
       current_state: intelligence.currentState,
       biggest_risks: intelligence.biggestRisks,
       missing_systems: intelligence.missingSystems,
       incomplete_content: intelligence.incompleteContent,
       recommended_actions: intelligence.recommendedActions,
+      quality_breakdown: { axes: overallAxes, byDiscipline: qualityBreakdown } as unknown as Json,
       evidence: { review: review?.critique ?? "Approved", agents: [...outputs.keys()] },
     }));
   }
@@ -405,9 +488,11 @@ export async function runAutonomousStudio({
       status: item.score >= 80 ? "approved" : "revision_requested",
       summary: item.summary,
       findings: item.findings,
+      axes: qualityBreakdown[item.discipline] as unknown as Json,
       evidence: { sourceAgents: [...outputs.keys()] },
     }))));
   }
+
   const builderOutput = outputs.get("game-builder") ?? "Build specification pending.";
   await must(supabase.from("build_records").insert({
     project_id: projectId,
@@ -433,7 +518,7 @@ export async function runAutonomousStudio({
       .update({
         status: "completed",
         phase: "approved",
-        revision_count: review && !review.approved ? 1 : 0,
+        revision_count: revisionCount,
         completed_at: new Date().toISOString(),
       })
       .eq("id", run.id),
@@ -456,5 +541,5 @@ export async function runAutonomousStudio({
   const completedAgents = plan.tasks
     .map((task) => AGENTS.find((agent) => agent.id === task.agent)?.name ?? task.agent)
     .join(", ");
-  return `## Production cycle approved\n\n${plan.userSummary}\n\n**Studio team deployed:** ${completedAgents}.\n\nI created ${plan.tasks.length} specialist deliverables, coordinated their handoffs, ran a cross-discipline review${review && !review.approved ? ", completed one revision cycle," : ""} and approved the unified production package. Open **Artifacts** to inspect the work or tell me what you want changed next.`;
+  return `## Production cycle approved\n\n${plan.userSummary}\n\n**Studio team deployed:** ${completedAgents}.\n\nI created ${plan.tasks.length} specialist deliverables, coordinated handoffs, ran ${revisionCount > 0 ? `${revisionCount} autonomous revision ${revisionCount === 1 ? "cycle" : "cycles"}` : "a clean cross-discipline review"} and approved the unified production package. Open **Artifacts** to inspect the work, **Quality** for the multi-axis scorecard, or **War Room** for the agent conversation.`;
 }

@@ -144,6 +144,50 @@ export type Database = {
           },
         ]
       }
+      agent_messages: {
+        Row: {
+          body: string
+          created_at: string
+          from_agent: string
+          id: string
+          kind: string
+          owner_id: string
+          project_id: string
+          run_id: string | null
+          to_agent: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          from_agent: string
+          id?: string
+          kind: string
+          owner_id: string
+          project_id: string
+          run_id?: string | null
+          to_agent?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          from_agent?: string
+          id?: string
+          kind?: string
+          owner_id?: string
+          project_id?: string
+          run_id?: string | null
+          to_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       artifact_reviews: {
         Row: {
           artifact_id: string
@@ -465,6 +509,7 @@ export type Database = {
       project_intelligence: {
         Row: {
           biggest_risks: Json
+          completion_percent: number | null
           created_at: string
           current_state: string
           evidence: Json
@@ -475,12 +520,16 @@ export type Database = {
           owner_id: string
           progress_percent: number
           project_id: string
+          quality_breakdown: Json
           recommended_actions: Json
           run_id: string | null
+          tech_debt_notes: Json
+          test_coverage_percent: number | null
           updated_at: string
         }
         Insert: {
           biggest_risks?: Json
+          completion_percent?: number | null
           created_at?: string
           current_state?: string
           evidence?: Json
@@ -491,12 +540,16 @@ export type Database = {
           owner_id: string
           progress_percent?: number
           project_id: string
+          quality_breakdown?: Json
           recommended_actions?: Json
           run_id?: string | null
+          tech_debt_notes?: Json
+          test_coverage_percent?: number | null
           updated_at?: string
         }
         Update: {
           biggest_risks?: Json
+          completion_percent?: number | null
           created_at?: string
           current_state?: string
           evidence?: Json
@@ -507,8 +560,11 @@ export type Database = {
           owner_id?: string
           progress_percent?: number
           project_id?: string
+          quality_breakdown?: Json
           recommended_actions?: Json
           run_id?: string | null
+          tech_debt_notes?: Json
+          test_coverage_percent?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -611,6 +667,7 @@ export type Database = {
       quality_reviews: {
         Row: {
           artifact_id: string | null
+          axes: Json
           created_at: string
           discipline: string
           evidence: Json
@@ -619,6 +676,7 @@ export type Database = {
           owner_id: string
           project_id: string
           reviewer_agent: string
+          revision_cycle: number
           run_id: string | null
           score: number
           status: string
@@ -627,6 +685,7 @@ export type Database = {
         }
         Insert: {
           artifact_id?: string | null
+          axes?: Json
           created_at?: string
           discipline: string
           evidence?: Json
@@ -635,6 +694,7 @@ export type Database = {
           owner_id: string
           project_id: string
           reviewer_agent?: string
+          revision_cycle?: number
           run_id?: string | null
           score: number
           status?: string
@@ -643,6 +703,7 @@ export type Database = {
         }
         Update: {
           artifact_id?: string | null
+          axes?: Json
           created_at?: string
           discipline?: string
           evidence?: Json
@@ -651,6 +712,7 @@ export type Database = {
           owner_id?: string
           project_id?: string
           reviewer_agent?: string
+          revision_cycle?: number
           run_id?: string | null
           score?: number
           status?: string
@@ -734,6 +796,62 @@ export type Database = {
           },
         ]
       }
+      studio_tasks: {
+        Row: {
+          acceptance_criteria: string | null
+          assignee_agent: string
+          created_at: string
+          deliverable: string | null
+          id: string
+          owner_id: string
+          parent_artifact_id: string | null
+          project_id: string
+          revision_cycle: number
+          run_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acceptance_criteria?: string | null
+          assignee_agent: string
+          created_at?: string
+          deliverable?: string | null
+          id?: string
+          owner_id: string
+          parent_artifact_id?: string | null
+          project_id: string
+          revision_cycle?: number
+          run_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acceptance_criteria?: string | null
+          assignee_agent?: string
+          created_at?: string
+          deliverable?: string | null
+          id?: string
+          owner_id?: string
+          parent_artifact_id?: string | null
+          project_id?: string
+          revision_cycle?: number
+          run_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       threads: {
         Row: {
           agent: string | null
@@ -771,6 +889,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_preferences: {
+        Row: {
+          design_patterns: Json
+          favorite_genres: string[]
+          notes: string | null
+          tone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          design_patterns?: Json
+          favorite_genres?: string[]
+          notes?: string | null
+          tone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          design_patterns?: Json
+          favorite_genres?: string[]
+          notes?: string | null
+          tone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
