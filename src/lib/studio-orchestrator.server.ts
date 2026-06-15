@@ -518,7 +518,7 @@ export async function runAutonomousStudio({
       .update({
         status: "completed",
         phase: "approved",
-        revision_count: review && !review.approved ? 1 : 0,
+        revision_count: revisionCount,
         completed_at: new Date().toISOString(),
       })
       .eq("id", run.id),
