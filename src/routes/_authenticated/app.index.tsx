@@ -126,17 +126,19 @@ function Dashboard() {
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {EXAMPLES.map((ex) => (
-            <button
+            <Button
               key={ex.title}
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => {
                 setTitle(ex.title);
                 setPrompt(ex.prompt);
               }}
-              className="rounded-full border hairline px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+              className="rounded-full text-muted-foreground shadow-none"
             >
               {ex.title}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -213,17 +215,19 @@ function OnboardingCard() {
   if (hidden) return null;
   return (
     <div className="relative mb-10 rounded-2xl border hairline bg-surface/50 p-6">
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="icon"
         aria-label="Dismiss"
         onClick={() => {
           localStorage.setItem("derrly.onboarded", "1");
           setHidden(true);
         }}
-        className="absolute right-4 top-4 text-muted-foreground transition-colors hover:text-foreground"
+        className="absolute right-3 top-3 rounded-full text-muted-foreground hover:text-foreground"
       >
         <X className="size-4" />
-      </button>
+      </Button>
       <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
         Welcome to Derrly
       </p>
