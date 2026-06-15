@@ -138,22 +138,39 @@ function StudioPanel({
   const activities = workspace?.activities ?? [];
   const artifacts = workspace?.artifacts ?? [];
   const memory = workspace?.memory ?? [];
+  const events = workspace?.events ?? [];
+  const handoffs = workspace?.handoffs ?? [];
+  const quality = workspace?.quality ?? [];
+  const intelligence = workspace?.intelligence;
+  const build = workspace?.build;
+  const averageQuality = quality.length ? Math.round(quality.reduce((sum, item) => sum + item.score, 0) / quality.length) : 0;
   return (
     <aside className="min-w-0 bg-surface/40">
-      <Tabs defaultValue="activity" className="sticky top-14">
-        <div className="border-b hairline px-4 py-3">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="activity">
-              <Radio /> Live
-            </TabsTrigger>
-            <TabsTrigger value="artifacts">
-              <FileText /> Artifacts
-            </TabsTrigger>
-            <TabsTrigger value="memory">
-              <Brain /> Memory
-            </TabsTrigger>
+      <Tabs defaultValue="overview" className="sticky top-14">
+        <div className="overflow-x-auto border-b hairline px-3 py-3">
+          <TabsList className="inline-flex min-w-max">
+            <TabsTrigger value="overview"><Gauge /> Overview</TabsTrigger>
+            <TabsTrigger value="activity"><Radio /> Timeline</TabsTrigger>
+            <TabsTrigger value="war-room"><MessagesSquare /> War Room</TabsTrigger>
+            <TabsTrigger value="quality"><FlaskConical /> Quality</TabsTrigger>
+            <TabsTrigger value="prototype"><Hammer /> Build</TabsTrigger>
+            <TabsTrigger value="artifacts"><FileText /> Artifacts</TabsTrigger>
+            <TabsTrigger value="memory"><Brain /> Memory</TabsTrigger>
           </TabsList>
         </div>
+        <TabsContent value="overview" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
+          <SectionLabel>Project intelligence</SectionLabel>
+          {intelligence ? <>
+            <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border hairline bg-hairline">
+              <ScoreCell label="Project health" score={intelligence.health_score} />
+              <ScoreCell label="Progress" score={intelligence.progress_percent} />
+            </div>
+            <p className="mt-5 text-sm leading-relaxed text-foreground">{intelligence.current_state}</p>
+            <IntelligenceList icon={AlertTriangle} label="Biggest risks" items={asStrings(intelligence.biggest_risks)} />
+            <IntelligenceList icon={Circle} label="Missing systems" items={asStrings(intelligence.missing_systems)} />
+            <IntelligenceList icon={ArrowRight} label="Recommended next" items={asStrings(intelligence.recommended_actions)} />
+          </> : <EmptyText>Run the studio once to generate an evidence-based health assessment.</EmptyText>}
+        </TabsContent>
         <TabsContent
           value="activity"
           className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5"
@@ -162,9 +179,9 @@ function StudioPanel({
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
               Studio activity
             </p>
-            {activities.length ? (
+            {(events.length || activities.length) ? (
               <ol className="mt-5 space-y-5">
-                {activities.map((activity) => {
+                {(events.length ? events.map((event) => ({ ...event, agent: event.actor, status: "completed" })) : activities).map((activity) => {
                   const agent = AGENTS.find((item) => item.id === activity.agent);
                   return (
                     <li key={activity.id} className="grid grid-cols-[18px_1fr] gap-3">
@@ -182,6 +199,7 @@ function StudioPanel({
                         <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
                           {activity.summary}
                         </p>
+                        <time className="mt-1 block text-[10px] uppercase tracking-widest text-muted-foreground">{formatTime(activity.created_at)}</time>
                       </div>
                     </li>
                   );
@@ -194,6 +212,18 @@ function StudioPanel({
             )}
           </div>
         </TabsContent>
+        <TabsContent value="war-room" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
+          <SectionLabel>Studio meeting</SectionLabel>
+          {handoffs.length ? <ol className="mt-5 space-y-4">{handoffs.map((handoff) => <li key={handoff.id} className="border-l-2 hairline pl-4"><p className="text-xs font-medium text-foreground">{agentName(handoff.from_agent)} <ArrowRight className="mx-1 inline size-3" /> {agentName(handoff.to_agent)}</p><p className="mt-1 text-sm text-muted-foreground">{handoffText(handoff)}</p><span className="mt-2 inline-block rounded-full border hairline px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">{handoff.status.replaceAll("_", " ")}</span></li>)}</ol> : <EmptyText>Agent discussions, reviews, and revisions will appear during production.</EmptyText>}
+        </TabsContent>
+        <TabsContent value="quality" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
+          <SectionLabel>Generation quality</SectionLabel>
+          {quality.length ? <><div className="mt-4 rounded-xl border hairline p-4"><p className="text-xs uppercase tracking-widest text-muted-foreground">Overall project score</p><p className="mt-2 font-display text-5xl text-foreground">{averageQuality}%</p></div><ul className="mt-4 divide-y hairline">{quality.map((item) => <li key={item.id} className="py-4"><div className="flex items-baseline justify-between gap-3"><p className="text-sm font-medium capitalize text-foreground">{item.discipline}</p><strong className="font-display text-2xl font-normal">{item.score}%</strong></div><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.summary}</p></li>)}</ul></> : <EmptyText>Rubric scores appear after QA reviews the production package.</EmptyText>}
+        </TabsContent>
+        <TabsContent value="prototype" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
+          <SectionLabel>Prototype center</SectionLabel>
+          {build ? <><div className="mt-4 flex items-center justify-between rounded-xl border hairline p-4"><div><p className="text-sm font-medium text-foreground">Build v{build.version}</p><p className="mt-1 text-xs text-muted-foreground">Design specification</p></div><span className="rounded-full border hairline px-2 py-1 text-[10px] uppercase tracking-widest">{build.status}</span></div><BuildSection title="Gameplay overview" content={build.gameplay_overview} /><BuildSection title="Core loop" content={build.core_loop} /><BuildSection title="World overview" content={build.world_overview} /><BuildSection title="Quest overview" content={build.quest_overview} /></> : <EmptyText>The Game Builder has not produced a build specification yet.</EmptyText>}
+        </TabsContent>
         <TabsContent
           value="artifacts"
           className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5"
@@ -204,32 +234,7 @@ function StudioPanel({
           {artifacts.length ? (
             <div className="mt-4 space-y-3">
               {artifacts.map((artifact) => (
-                <details key={artifact.id} className="group border-b hairline pb-3">
-                  <summary className="cursor-pointer list-none py-2">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{artifact.title}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {AGENTS.find((a) => a.id === artifact.produced_by)?.name ??
-                            artifact.produced_by}
-                        </p>
-                      </div>
-                      <span className="rounded-full border hairline px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-                        v{artifact.version}
-                      </span>
-                    </div>
-                  </summary>
-                  <div className="prose prose-sm mt-2 max-w-none text-sm leading-relaxed text-foreground [&_h1]:font-display [&_h2]:font-display [&_h3]:font-medium [&_li]:my-1 [&_p]:my-2">
-                    <ReactMarkdown>
-                      {artifact.content &&
-                      typeof artifact.content === "object" &&
-                      !Array.isArray(artifact.content) &&
-                      typeof artifact.content.markdown === "string"
-                        ? artifact.content.markdown
-                        : artifact.summary}
-                    </ReactMarkdown>
-                  </div>
-                </details>
+                <ArtifactItem key={artifact.id} artifact={artifact} />
               ))}
             </div>
           ) : (
