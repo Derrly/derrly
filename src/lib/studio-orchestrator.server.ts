@@ -541,5 +541,5 @@ export async function runAutonomousStudio({
   const completedAgents = plan.tasks
     .map((task) => AGENTS.find((agent) => agent.id === task.agent)?.name ?? task.agent)
     .join(", ");
-  return `## Production cycle approved\n\n${plan.userSummary}\n\n**Studio team deployed:** ${completedAgents}.\n\nI created ${plan.tasks.length} specialist deliverables, coordinated their handoffs, ran a cross-discipline review${review && !review.approved ? ", completed one revision cycle," : ""} and approved the unified production package. Open **Artifacts** to inspect the work or tell me what you want changed next.`;
+  return `## Production cycle approved\n\n${plan.userSummary}\n\n**Studio team deployed:** ${completedAgents}.\n\nI created ${plan.tasks.length} specialist deliverables, coordinated handoffs, ran ${revisionCount > 0 ? `${revisionCount} autonomous revision ${revisionCount === 1 ? "cycle" : "cycles"}` : "a clean cross-discipline review"} and approved the unified production package. Open **Artifacts** to inspect the work, **Quality** for the multi-axis scorecard, or **War Room** for the agent conversation.`;
 }
