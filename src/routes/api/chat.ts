@@ -176,6 +176,7 @@ export const Route = createFileRoute("/api/chat")({
           });
         } catch (error) {
           const message = error instanceof Error ? error.message : "Studio orchestration failed";
+          console.error("[api/chat] orchestration error", error);
           await supabase
             .from("studio_runs")
             .update({ status: "failed", phase: "failed", error_message: message, completed_at: new Date().toISOString() })
@@ -185,7 +186,7 @@ export const Route = createFileRoute("/api/chat")({
             .from("projects")
             .update({ status: "needs-attention" })
             .eq("id", thread.project_id);
-          return new Response(message, { status: 500 });
+          return new Response("The studio encountered an error. Please try again.", { status: 500 });
         }
       },
     },
