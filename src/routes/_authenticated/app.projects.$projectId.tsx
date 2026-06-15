@@ -125,14 +125,16 @@ function ProjectPage() {
         )}
       </section>
 
-      <StudioPanel workspace={workspace.data} />
+      <StudioPanel projectId={projectId} workspace={workspace.data} />
     </div>
   );
 }
 
 function StudioPanel({
+  projectId,
   workspace,
 }: {
+  projectId: string;
   workspace: Awaited<ReturnType<typeof getStudioWorkspace>> | undefined;
 }) {
   const activities = workspace?.activities ?? [];
@@ -234,7 +236,7 @@ function StudioPanel({
           {artifacts.length ? (
             <div className="mt-4 space-y-3">
               {artifacts.map((artifact) => (
-                <ArtifactItem key={artifact.id} artifact={artifact} />
+                <ArtifactItem key={artifact.id} projectId={projectId} artifact={artifact} />
               ))}
             </div>
           ) : (
@@ -269,6 +271,48 @@ function StudioPanel({
       </Tabs>
     </aside>
   );
+}
+
+const SectionLabel = ({ children }: { children: React.ReactNode }) => <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">{children}</p>;
+const EmptyText = ({ children }: { children: React.ReactNode }) => <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{children}</p>;
+const asStrings = (value: unknown) => Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+const formatTime = (value: string) => new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+const agentName = (id: string) => AGENTS.find((agent) => agent.id === id)?.name ?? id.replaceAll("-", " ");
+
+function ScoreCell({ label, score }: { label: string; score: number }) {
+  return <div className="bg-background p-4"><p className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p><p className="mt-2 font-display text-4xl text-foreground">{score}%</p></div>;
+}
+
+function IntelligenceList({ icon: Icon, label, items }: { icon: typeof Circle; label: string; items: string[] }) {
+  if (!items.length) return null;
+  return <div className="mt-5"><p className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-widest text-muted-foreground"><Icon className="size-3" />{label}</p><ul className="mt-2 space-y-2">{items.map((item) => <li key={item} className="text-sm leading-relaxed text-foreground">{item}</li>)}</ul></div>;
+}
+
+function handoffText(handoff: { request_type: string; context: unknown; response: string | null }) {
+  if (handoff.response) return handoff.response;
+  if (handoff.context && typeof handoff.context === "object" && !Array.isArray(handoff.context)) {
+    const context = handoff.context as Record<string, unknown>;
+    const detail = context.instruction ?? context.critique ?? context.objective ?? context.artifact;
+    if (typeof detail === "string") return detail;
+  }
+  return `${handoff.request_type.replaceAll("_", " ")} shared with the next specialist.`;
+}
+
+function BuildSection({ title, content }: { title: string; content: string }) {
+  return <details className="border-b hairline py-4"><summary className="cursor-pointer text-sm font-medium text-foreground">{title}</summary><div className="prose prose-sm mt-3 max-w-none text-muted-foreground"><ReactMarkdown>{content}</ReactMarkdown></div></details>;
+}
+
+type StudioArtifact = NonNullable<Awaited<ReturnType<typeof getStudioWorkspace>>>["artifacts"][number];
+
+function ArtifactItem({ projectId, artifact }: { projectId: string; artifact: StudioArtifact }) {
+  const review = useServerFn(reviewArtifact);
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (decision: "approved" | "revision_requested") => review({ data: { projectId, artifactId: artifact.id, decision, comment: decision === "revision_requested" ? "Please revise this deliverable based on the latest project direction." : "" } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
+  });
+  const markdown = artifact.content && typeof artifact.content === "object" && !Array.isArray(artifact.content) && typeof artifact.content.markdown === "string" ? artifact.content.markdown : artifact.summary;
+  return <details className="group border-b hairline pb-3"><summary className="cursor-pointer list-none py-2"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-medium text-foreground">{artifact.title}</p><p className="mt-1 text-xs text-muted-foreground">{agentName(artifact.produced_by)} · {artifact.review_status.replaceAll("_", " ")}</p></div><span className="rounded-full border hairline px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">v{artifact.version}</span></div></summary><div className="prose prose-sm mt-2 max-w-none text-sm leading-relaxed text-foreground"><ReactMarkdown>{markdown}</ReactMarkdown></div><div className="mt-4 flex gap-2"><Button size="sm" variant="outline" disabled={mutation.isPending} onClick={() => mutation.mutate("revision_requested")}>Request revision</Button><Button size="sm" disabled={mutation.isPending} onClick={() => mutation.mutate("approved")}><Check /> Approve</Button></div></details>;
 }
 
 function ChatWindow({
