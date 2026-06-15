@@ -150,27 +150,38 @@ export async function runAutonomousStudio({
 }) {
   const groq = createGroq();
   const latestRequest = messageText(messages[messages.length - 1]);
-  const existingMemory = await must(
+  const [existingMemory, prefsRow] = await Promise.all([
+    must(
+      supabase
+        .from("project_memory")
+        .select("category, title, content, source_agent, version")
+        .eq("project_id", projectId)
+        .eq("status", "approved")
+        .order("updated_at", { ascending: false })
+        .limit(20),
+    ),
     supabase
-      .from("project_memory")
-      .select("category, title, content, source_agent, version")
-      .eq("project_id", projectId)
-      .eq("status", "approved")
-      .order("updated_at", { ascending: false })
-      .limit(20),
-  );
+      .from("user_preferences")
+      .select("favorite_genres, design_patterns, tone, notes")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
   const memoryContext = existingMemory.length
     ? JSON.stringify([...existingMemory].reverse()).slice(0, 32_000)
     : "No prior approved project memory exists.";
+  const preferencesContext = prefsRow.data
+    ? `User preferences — favorite genres: ${(prefsRow.data.favorite_genres ?? []).join(", ") || "n/a"}; tone: ${prefsRow.data.tone ?? "n/a"}; notes: ${prefsRow.data.notes ?? "n/a"}.`
+    : "No saved user preferences.";
 
   const planResult = await generateText({
     model: groq(GROQ_MODEL),
     output: Output.object({ schema: PlanSchema }),
     system:
-      "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists. Return valid JSON matching the provided response schema.",
-    prompt: `Project: ${projectTitle}\nOriginal pitch: ${projectPrompt ?? ""}\nLatest direction: ${latestRequest}\nShared memory: ${memoryContext}`,
+      "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists. Honor user preferences when relevant. Return valid JSON matching the provided response schema.",
+    prompt: `Project: ${projectTitle}\nOriginal pitch: ${projectPrompt ?? ""}\nLatest direction: ${latestRequest}\n${preferencesContext}\nShared memory: ${memoryContext}`,
     ...modelGuard(),
   });
+
   const plan = planResult.output;
   if (!plan) throw new Error("The Executive Producer could not create a production plan.");
 
