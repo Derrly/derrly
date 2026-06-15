@@ -84,9 +84,34 @@ const IntelligenceSchema = z.object({
   recommendedActions: z.array(z.string()),
 });
 
+const QUALITY_AXES = [
+  "creativity",
+  "gameplay",
+  "replayability",
+  "clarity",
+  "balance",
+  "feasibility",
+  "enjoyment",
+] as const;
+
 const QualitySchema = z.object({
-  reviews: z.array(z.object({ discipline: z.string(), score: z.number(), summary: z.string(), findings: z.array(z.string()) })),
+  reviews: z.array(z.object({
+    discipline: z.string(),
+    score: z.number(),
+    summary: z.string(),
+    findings: z.array(z.string()),
+    axes: z.object({
+      creativity: z.number(),
+      gameplay: z.number(),
+      replayability: z.number(),
+      clarity: z.number(),
+      balance: z.number(),
+      feasibility: z.number(),
+      enjoyment: z.number(),
+    }),
+  })),
 });
+
 
 const clampScore = (score: number) => Math.max(0, Math.min(100, Math.round(score)));
 const modelGuard = () => ({ abortSignal: AbortSignal.timeout(25_000), maxOutputTokens: 4_000 });
