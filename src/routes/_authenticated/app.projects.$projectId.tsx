@@ -337,6 +337,43 @@ function StudioPanel({
   );
 }
 
+function KnowledgePanel({ projectId }: { projectId: string }) {
+  const ask = useServerFn(askProject);
+  const [q, setQ] = useState("");
+  const [answer, setAnswer] = useState<string>("");
+  const mutation = useMutation({
+    mutationFn: (question: string) => ask({ data: { projectId, question } }),
+    onSuccess: (res) => setAnswer(res.answer),
+  });
+  return (
+    <div>
+      <SectionLabel>Project knowledge base</SectionLabel>
+      <p className="mt-3 text-sm text-muted-foreground">Ask anything about your game. The assistant searches every approved artifact and memory.</p>
+      <form
+        className="mt-4 flex gap-2"
+        onSubmit={(e) => { e.preventDefault(); if (q.trim()) mutation.mutate(q.trim()); }}
+      >
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="What factions exist in my game?"
+          className="flex-1 rounded-md border hairline bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+        />
+        <Button type="submit" disabled={mutation.isPending || !q.trim()}>
+          {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : "Ask"}
+        </Button>
+      </form>
+      {mutation.isError ? <p className="mt-3 text-xs text-destructive">Could not get an answer. Try again.</p> : null}
+      {answer ? (
+        <div className="prose prose-sm mt-5 max-w-none text-foreground">
+          <ReactMarkdown>{answer}</ReactMarkdown>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+
 const SectionLabel = ({ children }: { children: React.ReactNode }) => <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">{children}</p>;
 const EmptyText = ({ children }: { children: React.ReactNode }) => <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{children}</p>;
 const asStrings = (value: unknown) => Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
