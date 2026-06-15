@@ -183,7 +183,7 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
           .maybeSingle(),
         context.supabase
           .from("quality_reviews")
-          .select("id, discipline, score, status, summary, findings, evidence, reviewer_agent, created_at")
+          .select("id, discipline, score, status, summary, findings, axes, evidence, reviewer_agent, created_at")
           .eq("project_id", data.projectId)
           .eq("owner_id", context.userId)
           .order("created_at", { ascending: false })
