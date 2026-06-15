@@ -285,6 +285,14 @@ export const deleteProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
+    const { count, error: runError } = await context.supabase
+      .from("studio_runs")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", data.projectId)
+      .eq("owner_id", context.userId)
+      .in("status", ["planning", "running", "reviewing", "revising"]);
+    if (runError) throw new Error(runError.message);
+    if ((count ?? 0) > 0) throw new Error("Wait for the active production cycle to finish before deleting this project.");
     const { error } = await context.supabase
       .from("projects")
       .delete()

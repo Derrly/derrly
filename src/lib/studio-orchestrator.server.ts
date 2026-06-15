@@ -131,10 +131,11 @@ export async function runAutonomousStudio({
       .select("category, title, content, source_agent, version")
       .eq("project_id", projectId)
       .eq("status", "approved")
-      .order("updated_at", { ascending: true }),
+      .order("updated_at", { ascending: false })
+      .limit(20),
   );
   const memoryContext = existingMemory.length
-    ? JSON.stringify(existingMemory)
+    ? JSON.stringify([...existingMemory].reverse()).slice(0, 32_000)
     : "No prior approved project memory exists.";
 
   const planResult = await generateText({

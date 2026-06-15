@@ -60,6 +60,16 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Unauthorized", { status: 401 });
         }
         const userId = claims.claims.sub;
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        const { count: recentRuns, error: rateError } = await supabase
+          .from("studio_runs")
+          .select("id", { count: "exact", head: true })
+          .eq("owner_id", userId)
+          .gte("created_at", oneHourAgo);
+        if (rateError) return new Response("Could not verify studio capacity", { status: 500 });
+        if ((recentRuns ?? 0) >= 5) {
+          return new Response("Studio capacity reached. Try again in an hour.", { status: 429 });
+        }
 
         // Only the project's permanent Executive Producer conversation is user-facing.
         const { data: thread, error: threadErr } = await supabase
