@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
-import { ArrowLeft, Send, Loader2, Check, Circle, FileText, Brain, Radio } from "lucide-react";
-import { getProject, getStudioWorkspace, listMessages } from "@/lib/studio.functions";
+import { ArrowLeft, Send, Loader2, Check, Circle, FileText, Brain, Radio, Gauge, MessagesSquare, FlaskConical, Hammer, AlertTriangle, ArrowRight } from "lucide-react";
+import { getProject, getStudioWorkspace, listMessages, reviewArtifact } from "@/lib/studio.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { AGENTS } from "@/lib/derrly-data";
 import { Button } from "@/components/ui/button";
@@ -33,27 +33,17 @@ function ProjectPage() {
   });
 
   useEffect(() => {
+    let refreshTimer: ReturnType<typeof setTimeout> | undefined;
+    const refresh = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => void queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }), 400);
+    };
     const channel = supabase
       .channel(`studio:${projectId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "agent_activities", filter: `project_id=eq.${projectId}` },
-        () => queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "project_artifacts", filter: `project_id=eq.${projectId}` },
-        () => queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "project_memory", filter: `project_id=eq.${projectId}` },
-        () => queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "studio_runs", filter: `project_id=eq.${projectId}` },
-        () => queryClient.invalidateQueries({ queryKey: ["studio-workspace", projectId] }),
+        refresh,
       )
       .on(
         "postgres_changes",
@@ -62,6 +52,7 @@ function ProjectPage() {
       )
       .subscribe();
     return () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
       void supabase.removeChannel(channel);
     };
   }, [projectId, queryClient]);
