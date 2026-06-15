@@ -343,8 +343,9 @@ function KnowledgePanel({ projectId }: { projectId: string }) {
   const [answer, setAnswer] = useState<string>("");
   const mutation = useMutation({
     mutationFn: (question: string) => ask({ data: { projectId, question } }),
-    onSuccess: (res) => setAnswer(res.answer),
+    onSuccess: (res: { answer: string }) => setAnswer(res.answer),
   });
+
   return (
     <div>
       <SectionLabel>Project knowledge base</SectionLabel>
