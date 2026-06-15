@@ -74,6 +74,23 @@ const ReviewSchema = z.object({
   revisionInstruction: z.string(),
 });
 
+const IntelligenceSchema = z.object({
+  healthScore: z.number(),
+  progressPercent: z.number(),
+  currentState: z.string(),
+  biggestRisks: z.array(z.string()),
+  missingSystems: z.array(z.string()),
+  incompleteContent: z.array(z.string()),
+  recommendedActions: z.array(z.string()),
+});
+
+const QualitySchema = z.object({
+  reviews: z.array(z.object({ discipline: z.string(), score: z.number(), summary: z.string(), findings: z.array(z.string()) })),
+});
+
+const clampScore = (score: number) => Math.max(0, Math.min(100, Math.round(score)));
+const modelGuard = () => ({ abortSignal: AbortSignal.timeout(25_000), maxOutputTokens: 4_000 });
+
 function agentPrompt(agentId: string) {
   const agent = AGENTS.find((item) => item.id === agentId);
   if (!agent) return "You are a specialist in an autonomous game studio.";
@@ -114,10 +131,11 @@ export async function runAutonomousStudio({
       .select("category, title, content, source_agent, version")
       .eq("project_id", projectId)
       .eq("status", "approved")
-      .order("updated_at", { ascending: true }),
+      .order("updated_at", { ascending: false })
+      .limit(20),
   );
   const memoryContext = existingMemory.length
-    ? JSON.stringify(existingMemory)
+    ? JSON.stringify([...existingMemory].reverse()).slice(0, 32_000)
     : "No prior approved project memory exists.";
 
   const planResult = await generateText({
@@ -126,6 +144,7 @@ export async function runAutonomousStudio({
     system:
       "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists. Return valid JSON matching the provided response schema.",
     prompt: `Project: ${projectTitle}\nOriginal pitch: ${projectPrompt ?? ""}\nLatest direction: ${latestRequest}\nShared memory: ${memoryContext}`,
+    ...modelGuard(),
   });
   const plan = planResult.output;
   if (!plan) throw new Error("The Executive Producer could not create a production plan.");
@@ -220,6 +239,7 @@ export async function runAutonomousStudio({
       model: groq(GROQ_MODEL),
       system: agentPrompt(task.agent),
       prompt: `PROJECT BRIEF\n${plan.brief}\n\nYOUR ASSIGNMENT\n${task.objective}\n\nAPPROVED SHARED MEMORY\n${memoryContext}\n\nUPSTREAM HANDOFFS\n${dependencyOutputs || "None — establish the foundation for downstream specialists."}\n\nReturn a polished deliverable in markdown.`,
+      ...modelGuard(),
     });
     const output = generated.text;
     outputs.set(task.agent, output);
@@ -290,6 +310,7 @@ export async function runAutonomousStudio({
     system:
       "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction. Return valid JSON matching the provided response schema.",
     prompt: `Brief: ${plan.brief}\n\nDeliverables:\n${reviewTargets.map(([agent, output]) => `${agent}:\n${output}`).join("\n\n")}`,
+    ...modelGuard(),
   });
   const review = reviewResult.output;
   if (review && !review.approved && outputs.has(review.revisionTarget)) {
@@ -309,6 +330,7 @@ export async function runAutonomousStudio({
       model: groq(GROQ_MODEL),
       system: agentPrompt(review.revisionTarget),
       prompt: `Revise your deliverable in response to this review.\nCritique: ${review.critique}\nRequired correction: ${review.revisionInstruction}\nPrevious deliverable:\n${outputs.get(review.revisionTarget)}`,
+      ...modelGuard(),
     });
     outputs.set(review.revisionTarget, revision.text);
     await must(
@@ -336,6 +358,74 @@ export async function runAutonomousStudio({
       }),
     );
   }
+
+  const evidenceText = [...outputs.entries()]
+    .map(([agent, output]) => `${agent}: ${output.slice(0, 2500)}`)
+    .join("\n\n");
+  const [intelligenceResult, qualityResult] = await Promise.all([
+    generateText({
+      model: groq(GROQ_MODEL),
+      output: Output.object({ schema: IntelligenceSchema }),
+      system: "You are Derrly's Executive Producer reporting project intelligence. Assess only the supplied evidence. Scores must be 0-100. Identify concrete risks, gaps, incomplete content, and actionable next steps. Return valid JSON matching the schema.",
+      prompt: `Brief: ${plan.brief}\nQA review: ${review?.critique ?? "Approved without critique"}\nProduction evidence:\n${evidenceText}`,
+      ...modelGuard(),
+    }),
+    generateText({
+      model: groq(GROQ_MODEL),
+      output: Output.object({ schema: QualitySchema }),
+      system: "You are Derrly's quality board. Score only disciplines evidenced by the supplied work. Use concise discipline names, 0-100 scores, evidence-based summaries, and concrete findings. Return valid JSON matching the schema.",
+      prompt: `Project brief: ${plan.brief}\nProduction evidence:\n${evidenceText}`,
+      ...modelGuard(),
+    }),
+  ]);
+  const intelligence = intelligenceResult.output;
+  const quality = qualityResult.output;
+  if (intelligence) {
+    await must(supabase.from("project_intelligence").insert({
+      project_id: projectId,
+      run_id: run.id,
+      owner_id: userId,
+      health_score: clampScore(intelligence.healthScore),
+      progress_percent: clampScore(intelligence.progressPercent),
+      current_state: intelligence.currentState,
+      biggest_risks: intelligence.biggestRisks,
+      missing_systems: intelligence.missingSystems,
+      incomplete_content: intelligence.incompleteContent,
+      recommended_actions: intelligence.recommendedActions,
+      evidence: { review: review?.critique ?? "Approved", agents: [...outputs.keys()] },
+    }));
+  }
+  if (quality?.reviews.length) {
+    await must(supabase.from("quality_reviews").insert(quality.reviews.map((item) => ({
+      project_id: projectId,
+      run_id: run.id,
+      owner_id: userId,
+      discipline: item.discipline,
+      score: clampScore(item.score),
+      status: item.score >= 80 ? "approved" : "revision_requested",
+      summary: item.summary,
+      findings: item.findings,
+      evidence: { sourceAgents: [...outputs.keys()] },
+    }))));
+  }
+  const builderOutput = outputs.get("game-builder") ?? "Build specification pending.";
+  await must(supabase.from("build_records").insert({
+    project_id: projectId,
+    run_id: run.id,
+    owner_id: userId,
+    status: "specification",
+    gameplay_overview: outputs.get("gameplay-engineer")?.slice(0, 1800) ?? plan.brief,
+    core_loop: outputs.get("creative-director")?.slice(0, 1800) ?? plan.brief,
+    world_overview: outputs.get("world-architect")?.slice(0, 1800) ?? "World design not included in this cycle.",
+    quest_overview: outputs.get("quest-designer")?.slice(0, 1800) ?? "Quest design not included in this cycle.",
+    manifest: { type: "design-specification", agents: [...outputs.keys()], builderSpecification: builderOutput.slice(0, 4000) },
+    logs: ["Production artifacts assembled", "Cross-discipline review completed", "Build specification recorded"],
+  }));
+  await must(supabase.from("project_events").insert([
+    { project_id: projectId, run_id: run.id, owner_id: userId, actor_type: "agent", actor: "executive-producer", event_type: "brief_created", summary: "Executive Producer created the production brief", details: { taskCount: plan.tasks.length } },
+    ...plan.tasks.map((task) => ({ project_id: projectId, run_id: run.id, owner_id: userId, actor_type: "agent", actor: task.agent, event_type: task.agent === "qa-tester" ? "qa_completed" : task.agent === "game-builder" ? "build_specified" : "deliverable_completed", summary: `${AGENTS.find((agent) => agent.id === task.agent)?.name ?? task.agent} completed ${task.objective}`, details: { dependencies: task.dependsOn } })),
+    { project_id: projectId, run_id: run.id, owner_id: userId, actor_type: "agent", actor: "executive-producer", event_type: "run_approved", summary: "Executive Producer approved the production cycle", details: { revised: Boolean(review && !review.approved) } },
+  ]));
 
   await must(
     supabase

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, FileText, Map, Users, Layers, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, FileText, Map as MapIcon, Users, Layers, ShieldCheck } from "lucide-react";
 import { Section } from "@/components/site/Section";
 import { SHOWCASE } from "@/lib/derrly-data";
 
@@ -102,7 +102,7 @@ function ShowcasePage() {
                 <p className="mt-2 text-sm text-muted-foreground">{p.blurb}</p>
 
                 <dl className="mt-6 grid grid-cols-4 gap-px overflow-hidden rounded-xl border hairline bg-border text-sm">
-                  <Stat icon={Map} label="Regions" value={proof.counts.regions} />
+                  <Stat icon={MapIcon} label="Regions" value={proof.counts.regions} />
                   <Stat icon={Users} label="NPCs" value={proof.counts.npcs} />
                   <Stat icon={FileText} label="Quests" value={proof.counts.quests} />
                   <Stat icon={Layers} label="Systems" value={proof.counts.systems} />

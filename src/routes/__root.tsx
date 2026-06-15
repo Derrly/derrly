@@ -107,16 +107,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@derrly" },
       { name: "twitter:title", content: "Derrly — The autonomous AI game studio" },
-      { name: "description", content: "A personal hub application that aggregates and displays user-specific information." },
-      { property: "og:description", content: "A personal hub application that aggregates and displays user-specific information." },
-      { name: "twitter:description", content: "A personal hub application that aggregates and displays user-specific information." },
+      { name: "twitter:description", content: "Describe a game. An entire AI studio designs, builds, tests, and ships it." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/78c14271-ef5d-42f6-98c9-2d9e4b00d268/id-preview-a8ea3ef0--a38528de-c4c8-4099-aa24-c67aca7f5746.lovable.app-1781318144665.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/78c14271-ef5d-42f6-98c9-2d9e4b00d268/id-preview-a8ea3ef0--a38528de-c4c8-4099-aa24-c67aca7f5746.lovable.app-1781318144665.png" },
     ],
     links: [
-      { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: appCss },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&display=swap",

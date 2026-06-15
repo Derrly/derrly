@@ -144,6 +144,133 @@ export type Database = {
           },
         ]
       }
+      artifact_reviews: {
+        Row: {
+          artifact_id: string
+          comment: string
+          created_at: string
+          decision: string
+          id: string
+          owner_id: string
+          project_id: string
+          reviewer_id: string
+          run_id: string | null
+        }
+        Insert: {
+          artifact_id: string
+          comment?: string
+          created_at?: string
+          decision: string
+          id?: string
+          owner_id: string
+          project_id: string
+          reviewer_id: string
+          run_id?: string | null
+        }
+        Update: {
+          artifact_id?: string
+          comment?: string
+          created_at?: string
+          decision?: string
+          id?: string
+          owner_id?: string
+          project_id?: string
+          reviewer_id?: string
+          run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artifact_reviews_artifact_id_fkey"
+            columns: ["artifact_id"]
+            isOneToOne: false
+            referencedRelation: "project_artifacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artifact_reviews_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artifact_reviews_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "studio_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      build_records: {
+        Row: {
+          core_loop: string
+          created_at: string
+          gameplay_overview: string
+          id: string
+          logs: Json
+          manifest: Json
+          owner_id: string
+          preview_url: string | null
+          project_id: string
+          quest_overview: string
+          run_id: string | null
+          status: string
+          updated_at: string
+          version: number
+          world_overview: string
+        }
+        Insert: {
+          core_loop?: string
+          created_at?: string
+          gameplay_overview?: string
+          id?: string
+          logs?: Json
+          manifest?: Json
+          owner_id: string
+          preview_url?: string | null
+          project_id: string
+          quest_overview?: string
+          run_id?: string | null
+          status?: string
+          updated_at?: string
+          version?: number
+          world_overview?: string
+        }
+        Update: {
+          core_loop?: string
+          created_at?: string
+          gameplay_overview?: string
+          id?: string
+          logs?: Json
+          manifest?: Json
+          owner_id?: string
+          preview_url?: string | null
+          project_id?: string
+          quest_overview?: string
+          run_id?: string | null
+          status?: string
+          updated_at?: string
+          version?: number
+          world_overview?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "build_records_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "build_records_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "studio_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           ai_message_id: string | null
@@ -281,6 +408,126 @@ export type Database = {
           },
         ]
       }
+      project_events: {
+        Row: {
+          actor: string
+          actor_type: string
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          owner_id: string
+          project_id: string
+          run_id: string | null
+          summary: string
+        }
+        Insert: {
+          actor: string
+          actor_type: string
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+          owner_id: string
+          project_id: string
+          run_id?: string | null
+          summary: string
+        }
+        Update: {
+          actor?: string
+          actor_type?: string
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+          owner_id?: string
+          project_id?: string
+          run_id?: string | null
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_events_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "studio_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_intelligence: {
+        Row: {
+          biggest_risks: Json
+          created_at: string
+          current_state: string
+          evidence: Json
+          health_score: number
+          id: string
+          incomplete_content: Json
+          missing_systems: Json
+          owner_id: string
+          progress_percent: number
+          project_id: string
+          recommended_actions: Json
+          run_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          biggest_risks?: Json
+          created_at?: string
+          current_state?: string
+          evidence?: Json
+          health_score?: number
+          id?: string
+          incomplete_content?: Json
+          missing_systems?: Json
+          owner_id: string
+          progress_percent?: number
+          project_id: string
+          recommended_actions?: Json
+          run_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          biggest_risks?: Json
+          created_at?: string
+          current_state?: string
+          evidence?: Json
+          health_score?: number
+          id?: string
+          incomplete_content?: Json
+          missing_systems?: Json
+          owner_id?: string
+          progress_percent?: number
+          project_id?: string
+          recommended_actions?: Json
+          run_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_intelligence_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_intelligence_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "studio_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_memory: {
         Row: {
           category: string
@@ -360,6 +607,79 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quality_reviews: {
+        Row: {
+          artifact_id: string | null
+          created_at: string
+          discipline: string
+          evidence: Json
+          findings: Json
+          id: string
+          owner_id: string
+          project_id: string
+          reviewer_agent: string
+          run_id: string | null
+          score: number
+          status: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          artifact_id?: string | null
+          created_at?: string
+          discipline: string
+          evidence?: Json
+          findings?: Json
+          id?: string
+          owner_id: string
+          project_id: string
+          reviewer_agent?: string
+          run_id?: string | null
+          score: number
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Update: {
+          artifact_id?: string | null
+          created_at?: string
+          discipline?: string
+          evidence?: Json
+          findings?: Json
+          id?: string
+          owner_id?: string
+          project_id?: string
+          reviewer_agent?: string
+          run_id?: string | null
+          score?: number
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quality_reviews_artifact_id_fkey"
+            columns: ["artifact_id"]
+            isOneToOne: false
+            referencedRelation: "project_artifacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_reviews_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_reviews_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "studio_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       studio_runs: {
         Row: {

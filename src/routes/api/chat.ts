@@ -60,6 +60,16 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Unauthorized", { status: 401 });
         }
         const userId = claims.claims.sub;
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        const { count: recentRuns, error: rateError } = await supabase
+          .from("studio_runs")
+          .select("id", { count: "exact", head: true })
+          .eq("owner_id", userId)
+          .gte("created_at", oneHourAgo);
+        if (rateError) return new Response("Could not verify studio capacity", { status: 500 });
+        if ((recentRuns ?? 0) >= 5) {
+          return new Response("Studio capacity reached. Try again in an hour.", { status: 429 });
+        }
 
         // Only the project's permanent Executive Producer conversation is user-facing.
         const { data: thread, error: threadErr } = await supabase
@@ -93,17 +103,26 @@ export const Route = createFileRoute("/api/chat")({
           .select("id, role, content, parts")
           .eq("thread_id", threadId)
           .eq("owner_id", userId)
-          .order("created_at", { ascending: true });
+          .order("created_at", { ascending: false })
+          .limit(100);
         if (canonicalError) {
           return new Response("Could not load the conversation", { status: 500 });
         }
-        const canonicalMessages: UIMessage[] = (canonicalRows ?? []).map((row) => ({
+        const canonicalMessages: UIMessage[] = (canonicalRows ?? []).reverse().map((row) => ({
           id: row.id,
           role: row.role as "user" | "assistant" | "system",
           parts: [{ type: "text", text: row.content }],
         }));
 
         try {
+          const { data: activeRun } = await supabase
+            .from("studio_runs")
+            .select("id")
+            .eq("project_id", thread.project_id)
+            .in("status", ["planning", "running", "reviewing", "revising"])
+            .limit(1)
+            .maybeSingle();
+          if (activeRun) return new Response("This studio is already running a production cycle.", { status: 409 });
           const projects = thread.projects;
           const project = Array.isArray(projects) ? projects[0] : projects;
           const summary = await runAutonomousStudio({
@@ -167,11 +186,17 @@ export const Route = createFileRoute("/api/chat")({
           });
         } catch (error) {
           const message = error instanceof Error ? error.message : "Studio orchestration failed";
+          console.error("[api/chat] orchestration error", error);
+          await supabase
+            .from("studio_runs")
+            .update({ status: "failed", phase: "failed", error_message: message, completed_at: new Date().toISOString() })
+            .eq("project_id", thread.project_id)
+            .in("status", ["planning", "running", "reviewing", "revising"]);
           await supabase
             .from("projects")
             .update({ status: "needs-attention" })
             .eq("id", thread.project_id);
-          return new Response(message, { status: 500 });
+          return new Response("The studio encountered an error. Please try again.", { status: 500 });
         }
       },
     },
