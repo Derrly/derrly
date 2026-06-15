@@ -175,7 +175,7 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
           .limit(80),
         context.supabase
           .from("project_intelligence")
-          .select("id, health_score, progress_percent, current_state, biggest_risks, missing_systems, incomplete_content, recommended_actions, evidence, created_at")
+          .select("id, health_score, progress_percent, completion_percent, current_state, biggest_risks, missing_systems, incomplete_content, recommended_actions, quality_breakdown, tech_debt_notes, test_coverage_percent, evidence, created_at")
           .eq("project_id", data.projectId)
           .eq("owner_id", context.userId)
           .order("created_at", { ascending: false })
