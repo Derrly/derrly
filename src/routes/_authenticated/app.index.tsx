@@ -2,10 +2,11 @@ import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, Plus, Loader2, X, Activity, Hammer, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Plus, Loader2, X, Activity, Hammer, ShieldCheck, Circle } from "lucide-react";
 
 import { listProjects, createProject } from "@/lib/studio.functions";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 const EXAMPLES = [
   {
@@ -177,7 +178,7 @@ function Dashboard() {
                     <Metric icon={Hammer} label="Build" value={p.build?.status ?? "Pending"} />
                     <Metric icon={ShieldCheck} label="QA" value={p.run?.phase === "approved" ? "Approved" : p.run?.status ?? "Pending"} />
                   </div>
-                  <div className="mt-4 h-1 overflow-hidden rounded-full bg-muted"><div className="h-full bg-foreground" style={{ width: `${progress}%` }} /></div>
+                  <Progress value={progress} className="mt-4 h-1" />
                   <p className="mt-2 text-[10px] uppercase tracking-widest text-muted-foreground">{progress}% production complete · {p.run?.revision_count ?? 0} revisions</p>
                 </Link>
               </li>;
