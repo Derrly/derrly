@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, Plus, Loader2, X } from "lucide-react";
+import { ArrowUpRight, Plus, Loader2, X, Activity, Hammer, ShieldCheck } from "lucide-react";
 
 import { listProjects, createProject } from "@/lib/studio.functions";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,10 @@ function Dashboard() {
   const [prompt, setPrompt] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const visibleProjects = (projects.data ?? []).filter((project) =>
+    project.title.toLowerCase().includes(search.toLowerCase()),
+  );
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +68,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-12">
+    <div className="mx-auto max-w-6xl px-6 py-12">
       <OnboardingCard />
       <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
         Your studio
@@ -137,31 +141,47 @@ function Dashboard() {
       </div>
 
       <div className="mt-16">
-        <h2 className="font-display text-2xl text-foreground">Recent projects</h2>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">Portfolio command</p>
+            <h2 className="mt-2 font-display text-3xl text-foreground">Active productions</h2>
+          </div>
+          <label className="w-full sm:w-64">
+            <span className="sr-only">Search projects</span>
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search productions…" className="h-9 w-full rounded-full border hairline bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-ring" />
+          </label>
+        </div>
         {projects.isLoading ? (
           <p className="mt-6 text-sm text-muted-foreground">Loading…</p>
-        ) : projects.data && projects.data.length > 0 ? (
-          <ul className="mt-6 divide-y hairline border-y hairline">
-            {projects.data.map((p) => (
-              <li key={p.id}>
+        ) : visibleProjects.length > 0 ? (
+          <ul className="mt-6 grid gap-px overflow-hidden rounded-2xl border hairline bg-hairline lg:grid-cols-2">
+            {visibleProjects.map((p) => {
+              const health = p.intelligence?.health_score ?? (p.status === "ready" ? 75 : 20);
+              const progress = p.intelligence?.progress_percent ?? (p.status === "ready" ? 100 : 10);
+              return <li key={p.id} className="bg-background">
                 <Link
                   to="/app/projects/$projectId"
                   params={{ projectId: p.id }}
-                  className="group flex items-center justify-between py-5 transition-colors hover:bg-surface"
+                  className="group block p-5 transition-colors hover:bg-surface"
                 >
-                  <div className="min-w-0 pr-6">
-                    <p className="font-display text-xl text-foreground">{p.title}</p>
-                    <p className="mt-1 truncate text-sm text-muted-foreground">{p.prompt}</p>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-display text-2xl text-foreground">{p.title}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.prompt}</p>
+                    </div>
+                    <ArrowUpRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="rounded-full border hairline px-2.5 py-1 text-xs uppercase tracking-widest text-muted-foreground">
-                      {p.status}
-                    </span>
-                    <ArrowUpRight className="size-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  <div className="mt-5 grid grid-cols-2 gap-4 border-t hairline pt-4 text-xs sm:grid-cols-4">
+                    <Metric icon={Activity} label="Health" value={`${health}%`} />
+                    <Metric icon={Circle} label="Agent" value={p.activity?.status === "active" ? p.activity.agent.replaceAll("-", " ") : "Standing by"} />
+                    <Metric icon={Hammer} label="Build" value={p.build?.status ?? "Pending"} />
+                    <Metric icon={ShieldCheck} label="QA" value={p.run?.phase === "approved" ? "Approved" : p.run?.status ?? "Pending"} />
                   </div>
+                  <div className="mt-4 h-1 overflow-hidden rounded-full bg-muted"><div className="h-full bg-foreground" style={{ width: `${progress}%` }} /></div>
+                  <p className="mt-2 text-[10px] uppercase tracking-widest text-muted-foreground">{progress}% production complete · {p.run?.revision_count ?? 0} revisions</p>
                 </Link>
-              </li>
-            ))}
+              </li>;
+            })}
           </ul>
         ) : (
           <p className="mt-6 text-sm text-muted-foreground">
@@ -171,6 +191,10 @@ function Dashboard() {
       </div>
     </div>
   );
+}
+
+function Metric({ icon: Icon, label, value }: { icon: typeof Activity; label: string; value: string }) {
+  return <div className="min-w-0"><p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground"><Icon className="size-3" />{label}</p><p className="mt-1 truncate capitalize text-foreground">{value}</p></div>;
 }
 
 const STEPS = [
