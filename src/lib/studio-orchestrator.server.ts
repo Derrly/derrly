@@ -74,6 +74,23 @@ const ReviewSchema = z.object({
   revisionInstruction: z.string(),
 });
 
+const IntelligenceSchema = z.object({
+  healthScore: z.number(),
+  progressPercent: z.number(),
+  currentState: z.string(),
+  biggestRisks: z.array(z.string()),
+  missingSystems: z.array(z.string()),
+  incompleteContent: z.array(z.string()),
+  recommendedActions: z.array(z.string()),
+});
+
+const QualitySchema = z.object({
+  reviews: z.array(z.object({ discipline: z.string(), score: z.number(), summary: z.string(), findings: z.array(z.string()) })),
+});
+
+const clampScore = (score: number) => Math.max(0, Math.min(100, Math.round(score)));
+const modelGuard = () => ({ abortSignal: AbortSignal.timeout(25_000), maxOutputTokens: 4_000 });
+
 function agentPrompt(agentId: string) {
   const agent = AGENTS.find((item) => item.id === agentId);
   if (!agent) return "You are a specialist in an autonomous game studio.";
@@ -126,6 +143,7 @@ export async function runAutonomousStudio({
     system:
       "You are Derrly's Executive Producer. Convert the request into a concise project brief and a dependency-aware production task graph. Select only agents whose expertise is genuinely required. Always include creative-director, qa-tester, and game-builder. Put reviewers after the work they review. Never ask the user to manage specialists. Return valid JSON matching the provided response schema.",
     prompt: `Project: ${projectTitle}\nOriginal pitch: ${projectPrompt ?? ""}\nLatest direction: ${latestRequest}\nShared memory: ${memoryContext}`,
+    ...modelGuard(),
   });
   const plan = planResult.output;
   if (!plan) throw new Error("The Executive Producer could not create a production plan.");
@@ -220,6 +238,7 @@ export async function runAutonomousStudio({
       model: groq(GROQ_MODEL),
       system: agentPrompt(task.agent),
       prompt: `PROJECT BRIEF\n${plan.brief}\n\nYOUR ASSIGNMENT\n${task.objective}\n\nAPPROVED SHARED MEMORY\n${memoryContext}\n\nUPSTREAM HANDOFFS\n${dependencyOutputs || "None — establish the foundation for downstream specialists."}\n\nReturn a polished deliverable in markdown.`,
+      ...modelGuard(),
     });
     const output = generated.text;
     outputs.set(task.agent, output);
@@ -290,6 +309,7 @@ export async function runAutonomousStudio({
     system:
       "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction. Return valid JSON matching the provided response schema.",
     prompt: `Brief: ${plan.brief}\n\nDeliverables:\n${reviewTargets.map(([agent, output]) => `${agent}:\n${output}`).join("\n\n")}`,
+    ...modelGuard(),
   });
   const review = reviewResult.output;
   if (review && !review.approved && outputs.has(review.revisionTarget)) {
@@ -309,6 +329,7 @@ export async function runAutonomousStudio({
       model: groq(GROQ_MODEL),
       system: agentPrompt(review.revisionTarget),
       prompt: `Revise your deliverable in response to this review.\nCritique: ${review.critique}\nRequired correction: ${review.revisionInstruction}\nPrevious deliverable:\n${outputs.get(review.revisionTarget)}`,
+      ...modelGuard(),
     });
     outputs.set(review.revisionTarget, revision.text);
     await must(
