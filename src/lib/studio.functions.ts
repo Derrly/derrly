@@ -210,6 +210,13 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
           .eq("owner_id", context.userId)
           .order("created_at", { ascending: false })
           .limit(100),
+        context.supabase
+          .from("agent_messages")
+          .select("id, from_agent, to_agent, kind, body, created_at")
+          .eq("project_id", data.projectId)
+          .eq("owner_id", context.userId)
+          .order("created_at", { ascending: false })
+          .limit(80),
       ]);
 
     const error =
@@ -217,7 +224,7 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
       activityResult.error ??
       artifactResult.error ??
       runResult.error ??
-      memoryResult.error ?? handoffResult.error ?? intelligenceResult.error ?? qualityResult.error ?? buildResult.error ?? reviewResult.error ?? eventResult.error;
+      memoryResult.error ?? handoffResult.error ?? intelligenceResult.error ?? qualityResult.error ?? buildResult.error ?? reviewResult.error ?? eventResult.error ?? messagesResult.error;
     if (error) throw new Error(error.message);
     if (!threadResult.data) throw new Error("Executive Producer conversation not found");
 
@@ -233,8 +240,10 @@ export const getStudioWorkspace = createServerFn({ method: "GET" })
       build: buildResult.data,
       reviews: reviewResult.data ?? [],
       events: eventResult.data ?? [],
+      agentMessages: (messagesResult.data ?? []).slice().reverse(),
     };
   });
+
 
 // --- messages ---
 export const listMessages = createServerFn({ method: "GET" })
