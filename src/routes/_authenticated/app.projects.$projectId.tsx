@@ -6,7 +6,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
 import { ArrowLeft, Send, Loader2, Check, Circle, FileText, Brain, Radio, Gauge, MessagesSquare, FlaskConical, Hammer, AlertTriangle, ArrowRight } from "lucide-react";
-import { getProject, getStudioWorkspace, listMessages, reviewArtifact } from "@/lib/studio.functions";
+import { getProject, getStudioWorkspace, listMessages, reviewArtifact, askProject } from "@/lib/studio.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { AGENTS } from "@/lib/derrly-data";
 import { Button } from "@/components/ui/button";
