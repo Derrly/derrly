@@ -310,3 +310,95 @@ export const deleteProject = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// --- user preferences (cross-project memory) ---
+export const getUserPreferences = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("user_preferences")
+      .select("favorite_genres, design_patterns, tone, notes, updated_at")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data;
+  });
+
+const UpdatePrefs = z.object({
+  favoriteGenres: z.array(z.string().trim().min(1).max(40)).max(20),
+  tone: z.string().trim().max(80),
+  notes: z.string().trim().max(2000),
+});
+
+export const updateUserPreferences = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => UpdatePrefs.parse(input))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("user_preferences")
+      .upsert({
+        user_id: context.userId,
+        favorite_genres: data.favoriteGenres,
+        tone: data.tone || null,
+        notes: data.notes || null,
+      });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// --- knowledge base Q&A ---
+export const askProject = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ projectId: z.string().uuid(), question: z.string().trim().min(2).max(500) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const [memory, artifacts] = await Promise.all([
+      context.supabase
+        .from("project_memory")
+        .select("title, category, content, source_agent")
+        .eq("project_id", data.projectId)
+        .eq("owner_id", context.userId)
+        .eq("status", "approved")
+        .order("updated_at", { ascending: false })
+        .limit(30),
+      context.supabase
+        .from("project_artifacts")
+        .select("title, summary, content, produced_by")
+        .eq("project_id", data.projectId)
+        .eq("owner_id", context.userId)
+        .order("updated_at", { ascending: false })
+        .limit(20),
+    ]);
+    if (memory.error) throw new Error(memory.error.message);
+    if (artifacts.error) throw new Error(artifacts.error.message);
+
+    const knowledgeText = [
+      ...(memory.data ?? []).map((m) => {
+        const md = m.content && typeof m.content === "object" && !Array.isArray(m.content) && typeof (m.content as Record<string, unknown>).markdown === "string"
+          ? ((m.content as Record<string, unknown>).markdown as string)
+          : JSON.stringify(m.content);
+        return `# ${m.title} (${m.category}, by ${m.source_agent})\n${md.slice(0, 1500)}`;
+      }),
+      ...(artifacts.data ?? []).map((a) => {
+        const md = a.content && typeof a.content === "object" && !Array.isArray(a.content) && typeof (a.content as Record<string, unknown>).markdown === "string"
+          ? ((a.content as Record<string, unknown>).markdown as string)
+          : a.summary ?? "";
+        return `# ${a.title} (artifact, by ${a.produced_by})\n${md.slice(0, 1500)}`;
+      }),
+    ].join("\n\n").slice(0, 28_000);
+
+    const { generateText: gen } = await import("ai");
+    const { createGroq, GROQ_MODEL } = await import("@/lib/groq.server");
+    const groq = createGroq();
+    const result = await gen({
+      model: groq(GROQ_MODEL),
+      system:
+        "You are Derrly's project knowledge assistant. Answer the user's question using ONLY the supplied project knowledge. If something is not covered, say so. Be concise and structured.",
+      prompt: `QUESTION: ${data.question}\n\nPROJECT KNOWLEDGE:\n${knowledgeText || "No knowledge has been generated for this project yet."}`,
+      abortSignal: AbortSignal.timeout(20_000),
+      maxOutputTokens: 1200,
+    });
+    return { answer: result.text };
+  });
+
