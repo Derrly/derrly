@@ -405,6 +405,19 @@ export async function runAutonomousStudio({
   ]);
   const intelligence = intelligenceResult.output;
   const quality = qualityResult.output;
+  const qualityBreakdown: Record<string, Record<string, number>> = {};
+  if (quality?.reviews.length) {
+    for (const item of quality.reviews) {
+      qualityBreakdown[item.discipline] = Object.fromEntries(
+        QUALITY_AXES.map((axis) => [axis, clampScore(item.axes[axis] ?? item.score)]),
+      );
+    }
+  }
+  const overallAxes = QUALITY_AXES.reduce<Record<string, number>>((acc, axis) => {
+    const values = Object.values(qualityBreakdown).map((row) => row[axis]).filter((v) => typeof v === "number");
+    acc[axis] = values.length ? clampScore(values.reduce((a, b) => a + b, 0) / values.length) : 0;
+    return acc;
+  }, {});
   if (intelligence) {
     await must(supabase.from("project_intelligence").insert({
       project_id: projectId,
@@ -412,11 +425,13 @@ export async function runAutonomousStudio({
       owner_id: userId,
       health_score: clampScore(intelligence.healthScore),
       progress_percent: clampScore(intelligence.progressPercent),
+      completion_percent: clampScore(intelligence.progressPercent),
       current_state: intelligence.currentState,
       biggest_risks: intelligence.biggestRisks,
       missing_systems: intelligence.missingSystems,
       incomplete_content: intelligence.incompleteContent,
       recommended_actions: intelligence.recommendedActions,
+      quality_breakdown: { axes: overallAxes, byDiscipline: qualityBreakdown } as unknown as Json,
       evidence: { review: review?.critique ?? "Approved", agents: [...outputs.keys()] },
     }));
   }
@@ -430,9 +445,11 @@ export async function runAutonomousStudio({
       status: item.score >= 80 ? "approved" : "revision_requested",
       summary: item.summary,
       findings: item.findings,
+      axes: qualityBreakdown[item.discipline] as unknown as Json,
       evidence: { sourceAgents: [...outputs.keys()] },
     }))));
   }
+
   const builderOutput = outputs.get("game-builder") ?? "Build specification pending.";
   await must(supabase.from("build_records").insert({
     project_id: projectId,
