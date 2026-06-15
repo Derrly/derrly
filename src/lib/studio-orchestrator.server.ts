@@ -337,19 +337,39 @@ export async function runAutonomousStudio({
     }
   }
 
-  const reviewTargets = [...outputs.entries()].filter(
+  const reviewTargets = () => [...outputs.entries()].filter(
     ([agent]) => agent !== "qa-tester" && agent !== "game-builder",
   );
-  const reviewResult = await generateText({
-    model: groq(GROQ_MODEL),
-    output: Output.object({ schema: ReviewSchema }),
-    system:
-      "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction. Return valid JSON matching the provided response schema.",
-    prompt: `Brief: ${plan.brief}\n\nDeliverables:\n${reviewTargets.map(([agent, output]) => `${agent}:\n${output}`).join("\n\n")}`,
-    ...modelGuard(),
-  });
-  const review = reviewResult.output;
-  if (review && !review.approved && outputs.has(review.revisionTarget)) {
+  let review: z.infer<typeof ReviewSchema> | undefined;
+  let revisionCount = 0;
+  const MAX_REVISIONS = 3;
+  for (let cycle = 0; cycle < MAX_REVISIONS; cycle++) {
+    const targets = reviewTargets();
+    const reviewResult = await generateText({
+      model: groq(GROQ_MODEL),
+      output: Output.object({ schema: ReviewSchema }),
+      system:
+        "You are Derrly's QA Tester and Balance Specialist conducting a cross-discipline gate review. Approve only coherent, feasible work with consistent dependencies. If revision is needed, name the responsible agent and give one concrete correction. Return valid JSON matching the provided response schema.",
+      prompt: `Brief: ${plan.brief}\n\nDeliverables:\n${targets.map(([agent, output]) => `${agent}:\n${output}`).join("\n\n")}`,
+      ...modelGuard(),
+    });
+    review = reviewResult.output;
+    if (!review) break;
+    await must(
+      supabase.from("agent_messages").insert({
+        project_id: projectId,
+        run_id: run.id,
+        owner_id: userId,
+        from_agent: "qa-tester",
+        to_agent: review.approved ? null : review.revisionTarget,
+        kind: review.approved ? "approval" : "critique",
+        body: review.approved
+          ? `Approved cross-discipline review for cycle ${cycle + 1}.`
+          : `Cycle ${cycle + 1}: ${review.critique}`,
+      }),
+    );
+    if (review.approved || !outputs.has(review.revisionTarget)) break;
+    revisionCount++;
     await must(
       supabase.from("agent_handoffs").insert({
         project_id: projectId,
@@ -359,13 +379,13 @@ export async function runAutonomousStudio({
         to_agent: review.revisionTarget,
         request_type: "revision",
         status: "revision_requested",
-        context: { critique: review.critique, instruction: review.revisionInstruction },
+        context: { critique: review.critique, instruction: review.revisionInstruction, cycle: cycle + 1 },
       }),
     );
     const revision = await generateText({
       model: groq(GROQ_MODEL),
       system: agentPrompt(review.revisionTarget),
-      prompt: `Revise your deliverable in response to this review.\nCritique: ${review.critique}\nRequired correction: ${review.revisionInstruction}\nPrevious deliverable:\n${outputs.get(review.revisionTarget)}`,
+      prompt: `Revise your deliverable in response to this review (cycle ${cycle + 1} of ${MAX_REVISIONS}).\nCritique: ${review.critique}\nRequired correction: ${review.revisionInstruction}\nPrevious deliverable:\n${outputs.get(review.revisionTarget)}`,
       ...modelGuard(),
     });
     outputs.set(review.revisionTarget, revision.text);
@@ -374,10 +394,21 @@ export async function runAutonomousStudio({
         project_id: projectId,
         owner_id: userId,
         category: "revision",
-        title: `${review.revisionTarget} approved revision`,
-        content: { markdown: revision.text, critique: review.critique },
+        title: `${review.revisionTarget} revision cycle ${cycle + 1}`,
+        content: { markdown: revision.text, critique: review.critique, cycle: cycle + 1 },
         source_agent: review.revisionTarget,
         status: "approved",
+      }),
+    );
+    await must(
+      supabase.from("agent_messages").insert({
+        project_id: projectId,
+        run_id: run.id,
+        owner_id: userId,
+        from_agent: review.revisionTarget,
+        to_agent: "qa-tester",
+        kind: "revision",
+        body: `Submitted revision for cycle ${cycle + 1}. ${review.revisionInstruction}`,
       }),
     );
     await must(
@@ -389,11 +420,12 @@ export async function runAutonomousStudio({
         activity_type: "revision",
         status: "completed",
         summary: review.revisionInstruction,
-        sequence: plan.tasks.length + 1,
+        sequence: plan.tasks.length + cycle + 1,
         completed_at: new Date().toISOString(),
       }),
     );
   }
+
 
   const evidenceText = [...outputs.entries()]
     .map(([agent, output]) => `${agent}: ${output.slice(0, 2500)}`)
