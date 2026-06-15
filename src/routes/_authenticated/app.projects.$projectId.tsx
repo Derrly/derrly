@@ -145,7 +145,12 @@ function StudioPanel({
   const quality = workspace?.quality ?? [];
   const intelligence = workspace?.intelligence;
   const build = workspace?.build;
+  const agentMessages = workspace?.agentMessages ?? [];
   const averageQuality = quality.length ? Math.round(quality.reduce((sum, item) => sum + item.score, 0) / quality.length) : 0;
+  const overallAxes = (() => {
+    const breakdown = intelligence?.quality_breakdown as { axes?: Record<string, number> } | null | undefined;
+    return breakdown?.axes ?? null;
+  })();
   return (
     <aside className="min-w-0 bg-surface/40">
       <Tabs defaultValue="overview" className="sticky top-14">
@@ -156,10 +161,12 @@ function StudioPanel({
             <TabsTrigger value="war-room"><MessagesSquare /> War Room</TabsTrigger>
             <TabsTrigger value="quality"><FlaskConical /> Quality</TabsTrigger>
             <TabsTrigger value="prototype"><Hammer /> Build</TabsTrigger>
+            <TabsTrigger value="knowledge"><Brain /> Knowledge</TabsTrigger>
             <TabsTrigger value="artifacts"><FileText /> Artifacts</TabsTrigger>
             <TabsTrigger value="memory"><Brain /> Memory</TabsTrigger>
           </TabsList>
         </div>
+
         <TabsContent value="overview" className="m-0 max-h-[calc(100dvh-8.5rem)] overflow-y-auto p-5">
           <SectionLabel>Project intelligence</SectionLabel>
           {intelligence ? <>
