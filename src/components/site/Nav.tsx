@@ -4,12 +4,14 @@ import { Menu, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
+  { to: "/discover", label: "Discover" },
   { to: "/agents", label: "Agents" },
   { to: "/showcase", label: "Showcase" },
   { to: "/pricing", label: "Pricing" },
   { to: "/roadmap", label: "Roadmap" },
   { to: "/faq", label: "FAQ" },
 ] as const;
+
 
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
