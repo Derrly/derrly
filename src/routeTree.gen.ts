@@ -17,6 +17,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LegacyRouteImport } from './routes/legacy'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as CreatorsRouteImport } from './routes/creators'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -28,6 +29,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authenticated/app.profile'
+import { Route as AuthenticatedAppHistoryRouteImport } from './routes/_authenticated/app.history'
 import { Route as AuthenticatedAppProjectsProjectIdRouteImport } from './routes/_authenticated/app.projects.$projectId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -68,6 +70,11 @@ const FaqRoute = FaqRouteImport.update({
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorsRoute = CreatorsRouteImport.update({
+  id: '/creators',
+  path: '/creators',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -124,6 +131,11 @@ const AuthenticatedAppProfileRoute = AuthenticatedAppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppHistoryRoute = AuthenticatedAppHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppProjectsProjectIdRoute =
   AuthenticatedAppProjectsProjectIdRouteImport.update({
     id: '/projects/$projectId',
@@ -135,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/auth': typeof AuthRoute
+  '/creators': typeof CreatorsRoute
   '/discover': typeof DiscoverRoute
   '/faq': typeof FaqRoute
   '/legacy': typeof LegacyRoute
@@ -148,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/g/$slug': typeof GSlugRoute
   '/play/$projectId': typeof PlayProjectIdRoute
   '/u/$creatorId': typeof UCreatorIdRoute
+  '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/app/projects/$projectId': typeof AuthenticatedAppProjectsProjectIdRoute
@@ -156,6 +170,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/auth': typeof AuthRoute
+  '/creators': typeof CreatorsRoute
   '/discover': typeof DiscoverRoute
   '/faq': typeof FaqRoute
   '/legacy': typeof LegacyRoute
@@ -168,6 +183,7 @@ export interface FileRoutesByTo {
   '/g/$slug': typeof GSlugRoute
   '/play/$projectId': typeof PlayProjectIdRoute
   '/u/$creatorId': typeof UCreatorIdRoute
+  '/app/history': typeof AuthenticatedAppHistoryRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/app/projects/$projectId': typeof AuthenticatedAppProjectsProjectIdRoute
@@ -178,6 +194,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/agents': typeof AgentsRoute
   '/auth': typeof AuthRoute
+  '/creators': typeof CreatorsRoute
   '/discover': typeof DiscoverRoute
   '/faq': typeof FaqRoute
   '/legacy': typeof LegacyRoute
@@ -191,6 +208,7 @@ export interface FileRoutesById {
   '/g/$slug': typeof GSlugRoute
   '/play/$projectId': typeof PlayProjectIdRoute
   '/u/$creatorId': typeof UCreatorIdRoute
+  '/_authenticated/app/history': typeof AuthenticatedAppHistoryRoute
   '/_authenticated/app/profile': typeof AuthenticatedAppProfileRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/app/projects/$projectId': typeof AuthenticatedAppProjectsProjectIdRoute
@@ -201,6 +219,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agents'
     | '/auth'
+    | '/creators'
     | '/discover'
     | '/faq'
     | '/legacy'
@@ -214,6 +233,7 @@ export interface FileRouteTypes {
     | '/g/$slug'
     | '/play/$projectId'
     | '/u/$creatorId'
+    | '/app/history'
     | '/app/profile'
     | '/app/'
     | '/app/projects/$projectId'
@@ -222,6 +242,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agents'
     | '/auth'
+    | '/creators'
     | '/discover'
     | '/faq'
     | '/legacy'
@@ -234,6 +255,7 @@ export interface FileRouteTypes {
     | '/g/$slug'
     | '/play/$projectId'
     | '/u/$creatorId'
+    | '/app/history'
     | '/app/profile'
     | '/app'
     | '/app/projects/$projectId'
@@ -243,6 +265,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/agents'
     | '/auth'
+    | '/creators'
     | '/discover'
     | '/faq'
     | '/legacy'
@@ -256,6 +279,7 @@ export interface FileRouteTypes {
     | '/g/$slug'
     | '/play/$projectId'
     | '/u/$creatorId'
+    | '/_authenticated/app/history'
     | '/_authenticated/app/profile'
     | '/_authenticated/app/'
     | '/_authenticated/app/projects/$projectId'
@@ -266,6 +290,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AgentsRoute: typeof AgentsRoute
   AuthRoute: typeof AuthRoute
+  CreatorsRoute: typeof CreatorsRoute
   DiscoverRoute: typeof DiscoverRoute
   FaqRoute: typeof FaqRoute
   LegacyRoute: typeof LegacyRoute
@@ -336,6 +361,13 @@ declare module '@tanstack/react-router' {
       path: '/discover'
       fullPath: '/discover'
       preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creators': {
+      id: '/creators'
+      path: '/creators'
+      fullPath: '/creators'
+      preLoaderRoute: typeof CreatorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -415,6 +447,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppProfileRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/history': {
+      id: '/_authenticated/app/history'
+      path: '/history'
+      fullPath: '/app/history'
+      preLoaderRoute: typeof AuthenticatedAppHistoryRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/app/projects/$projectId': {
       id: '/_authenticated/app/projects/$projectId'
       path: '/projects/$projectId'
@@ -426,12 +465,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppHistoryRoute: typeof AuthenticatedAppHistoryRoute
   AuthenticatedAppProfileRoute: typeof AuthenticatedAppProfileRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppProjectsProjectIdRoute: typeof AuthenticatedAppProjectsProjectIdRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppHistoryRoute: AuthenticatedAppHistoryRoute,
   AuthenticatedAppProfileRoute: AuthenticatedAppProfileRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppProjectsProjectIdRoute:
@@ -457,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AgentsRoute: AgentsRoute,
   AuthRoute: AuthRoute,
+  CreatorsRoute: CreatorsRoute,
   DiscoverRoute: DiscoverRoute,
   FaqRoute: FaqRoute,
   LegacyRoute: LegacyRoute,
