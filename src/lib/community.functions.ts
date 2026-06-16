@@ -185,7 +185,7 @@ export const publishGame = createServerFn({ method: "POST" })
           cover_url: data.coverUrl || null,
           kind: parsed.data.kind,
           template: parsed.data.template,
-          manifest: parsed.data as unknown as Record<string, unknown>,
+          manifest: parsed.data as unknown as any,
           status: "public",
           updated_at: new Date().toISOString(),
         },
@@ -364,7 +364,7 @@ export const remixGame = createServerFn({ method: "POST" })
     if (error || !project) throw new Error(error?.message ?? "Failed to create remix project");
     await context.supabase.from("build_records").insert({
       project_id: project.id, owner_id: context.userId, version: 1, status: "remixed",
-      manifest: game.manifest as unknown as Record<string, unknown>, playable: true,
+      manifest: game.manifest as unknown as any, playable: true,
     });
     await context.supabase.from("game_remixes").insert({
       original_game_id: game.id, remix_project_id: project.id, user_id: context.userId,
