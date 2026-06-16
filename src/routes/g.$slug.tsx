@@ -49,7 +49,7 @@ function GameDetail() {
   const [score, setScore] = useState(4);
 
   useEffect(() => {
-    fetchGame({ data: { slug } }).then((g) => g ? setGame(g as Game) : navigate({ to: "/discover" }));
+    fetchGame({ data: { slug } }).then((g) => g ? setGame(g as unknown as Game) : navigate({ to: "/discover" }));
   }, [slug, fetchGame, navigate]);
 
   useEffect(() => {

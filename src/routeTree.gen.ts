@@ -16,10 +16,14 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LegacyRouteImport } from './routes/legacy'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UCreatorIdRouteImport } from './routes/u.$creatorId'
+import { Route as PlayProjectIdRouteImport } from './routes/play.$projectId'
+import { Route as GSlugRouteImport } from './routes/g.$slug'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
@@ -61,6 +65,11 @@ const FaqRoute = FaqRouteImport.update({
   path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -78,6 +87,21 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UCreatorIdRoute = UCreatorIdRouteImport.update({
+  id: '/u/$creatorId',
+  path: '/u/$creatorId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayProjectIdRoute = PlayProjectIdRouteImport.update({
+  id: '/play/$projectId',
+  path: '/play/$projectId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GSlugRoute = GSlugRouteImport.update({
+  id: '/g/$slug',
+  path: '/g/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -111,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/auth': typeof AuthRoute
+  '/discover': typeof DiscoverRoute
   '/faq': typeof FaqRoute
   '/legacy': typeof LegacyRoute
   '/pricing': typeof PricingRoute
@@ -120,6 +145,9 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/g/$slug': typeof GSlugRoute
+  '/play/$projectId': typeof PlayProjectIdRoute
+  '/u/$creatorId': typeof UCreatorIdRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/app/projects/$projectId': typeof AuthenticatedAppProjectsProjectIdRoute
@@ -128,6 +156,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
   '/auth': typeof AuthRoute
+  '/discover': typeof DiscoverRoute
   '/faq': typeof FaqRoute
   '/legacy': typeof LegacyRoute
   '/pricing': typeof PricingRoute
@@ -136,6 +165,9 @@ export interface FileRoutesByTo {
   '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/chat': typeof ApiChatRoute
+  '/g/$slug': typeof GSlugRoute
+  '/play/$projectId': typeof PlayProjectIdRoute
+  '/u/$creatorId': typeof UCreatorIdRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/app/projects/$projectId': typeof AuthenticatedAppProjectsProjectIdRoute
@@ -146,6 +178,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/agents': typeof AgentsRoute
   '/auth': typeof AuthRoute
+  '/discover': typeof DiscoverRoute
   '/faq': typeof FaqRoute
   '/legacy': typeof LegacyRoute
   '/pricing': typeof PricingRoute
@@ -155,6 +188,9 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/g/$slug': typeof GSlugRoute
+  '/play/$projectId': typeof PlayProjectIdRoute
+  '/u/$creatorId': typeof UCreatorIdRoute
   '/_authenticated/app/profile': typeof AuthenticatedAppProfileRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/app/projects/$projectId': typeof AuthenticatedAppProjectsProjectIdRoute
@@ -165,6 +201,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agents'
     | '/auth'
+    | '/discover'
     | '/faq'
     | '/legacy'
     | '/pricing'
@@ -174,6 +211,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/app'
     | '/api/chat'
+    | '/g/$slug'
+    | '/play/$projectId'
+    | '/u/$creatorId'
     | '/app/profile'
     | '/app/'
     | '/app/projects/$projectId'
@@ -182,6 +222,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agents'
     | '/auth'
+    | '/discover'
     | '/faq'
     | '/legacy'
     | '/pricing'
@@ -190,6 +231,9 @@ export interface FileRouteTypes {
     | '/showcase'
     | '/sitemap.xml'
     | '/api/chat'
+    | '/g/$slug'
+    | '/play/$projectId'
+    | '/u/$creatorId'
     | '/app/profile'
     | '/app'
     | '/app/projects/$projectId'
@@ -199,6 +243,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/agents'
     | '/auth'
+    | '/discover'
     | '/faq'
     | '/legacy'
     | '/pricing'
@@ -208,6 +253,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/app'
     | '/api/chat'
+    | '/g/$slug'
+    | '/play/$projectId'
+    | '/u/$creatorId'
     | '/_authenticated/app/profile'
     | '/_authenticated/app/'
     | '/_authenticated/app/projects/$projectId'
@@ -218,6 +266,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AgentsRoute: typeof AgentsRoute
   AuthRoute: typeof AuthRoute
+  DiscoverRoute: typeof DiscoverRoute
   FaqRoute: typeof FaqRoute
   LegacyRoute: typeof LegacyRoute
   PricingRoute: typeof PricingRoute
@@ -226,6 +275,9 @@ export interface RootRouteChildren {
   ShowcaseRoute: typeof ShowcaseRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
+  GSlugRoute: typeof GSlugRoute
+  PlayProjectIdRoute: typeof PlayProjectIdRoute
+  UCreatorIdRoute: typeof UCreatorIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -279,6 +331,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -305,6 +364,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/$creatorId': {
+      id: '/u/$creatorId'
+      path: '/u/$creatorId'
+      fullPath: '/u/$creatorId'
+      preLoaderRoute: typeof UCreatorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/$projectId': {
+      id: '/play/$projectId'
+      path: '/play/$projectId'
+      fullPath: '/play/$projectId'
+      preLoaderRoute: typeof PlayProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/g/$slug': {
+      id: '/g/$slug'
+      path: '/g/$slug'
+      fullPath: '/g/$slug'
+      preLoaderRoute: typeof GSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -377,6 +457,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AgentsRoute: AgentsRoute,
   AuthRoute: AuthRoute,
+  DiscoverRoute: DiscoverRoute,
   FaqRoute: FaqRoute,
   LegacyRoute: LegacyRoute,
   PricingRoute: PricingRoute,
@@ -385,6 +466,9 @@ const rootRouteChildren: RootRouteChildren = {
   ShowcaseRoute: ShowcaseRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
+  GSlugRoute: GSlugRoute,
+  PlayProjectIdRoute: PlayProjectIdRoute,
+  UCreatorIdRoute: UCreatorIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
