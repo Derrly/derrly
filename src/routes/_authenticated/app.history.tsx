@@ -12,8 +12,8 @@ type Project = { id: string; title: string; status: string; updated_at: string }
 type History = {
   builds: { id: string; version: number; status: string; playable: boolean | null; created_at: string }[];
   handoffs: { id: string; from_agent: string; to_agent: string; request_type: string | null; created_at: string }[];
-  reviews: { id: string; overall_score: number | null; reviewer: string | null; created_at: string }[];
-  events: { id: string; kind: string; summary: string | null; created_at: string }[];
+  reviews: { id: string; score: number | null; reviewer_agent: string | null; discipline: string | null; created_at: string }[];
+  events: { id: string; event_type: string; summary: string | null; created_at: string }[];
 };
 
 function fmt(ts: string) {
@@ -49,8 +49,8 @@ function HistoryPage() {
     ? [
         ...history.builds.map((b) => ({ ts: b.created_at, kind: "Build", label: `v${b.version} · ${b.status}${b.playable === false ? " · not playable" : b.playable ? " · playable" : ""}` })),
         ...history.handoffs.map((h) => ({ ts: h.created_at, kind: "Handoff", label: `${h.from_agent} → ${h.to_agent}${h.request_type ? ` — ${h.request_type}` : ""}` })),
-        ...history.reviews.map((r) => ({ ts: r.created_at, kind: "QA", label: `${r.reviewer ?? "Reviewer"} · score ${r.overall_score ?? "—"}` })),
-        ...history.events.map((e) => ({ ts: e.created_at, kind: e.kind, label: e.summary ?? e.kind })),
+        ...history.reviews.map((r) => ({ ts: r.created_at, kind: "QA", label: `${r.reviewer_agent ?? "Reviewer"}${r.discipline ? ` · ${r.discipline}` : ""} · score ${r.score ?? "—"}` })),
+        ...history.events.map((e) => ({ ts: e.created_at, kind: e.event_type, label: e.summary ?? e.event_type })),
       ].sort((a, b) => +new Date(b.ts) - +new Date(a.ts))
     : [];
 

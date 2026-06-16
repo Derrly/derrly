@@ -446,8 +446,8 @@ export const listProjectHistory = createServerFn({ method: "GET" })
     const [{ data: builds }, { data: handoffs }, { data: reviews }, { data: events }] = await Promise.all([
       context.supabase.from("build_records").select("id, version, status, playable, created_at").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
       context.supabase.from("agent_handoffs").select("id, from_agent, to_agent, request_type, created_at").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
-      context.supabase.from("quality_reviews").select("id, overall_score, created_at, reviewer").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
-      context.supabase.from("project_events").select("id, kind, summary, created_at").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
+      context.supabase.from("quality_reviews").select("id, score, reviewer_agent, discipline, created_at").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
+      context.supabase.from("project_events").select("id, event_type, summary, created_at").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
     ]);
     return { builds: builds ?? [], handoffs: handoffs ?? [], reviews: reviews ?? [], events: events ?? [] };
   });
