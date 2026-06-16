@@ -1,87 +1,131 @@
-# Derrly V21 — Self-Improving Autonomous Game Studio
+# Derrly V23 — Universal Playable Engine + Community Hub
 
-Build on the V20 foundation (intelligence/quality/events tables already exist). V21 closes the loop so the studio runs autonomously after a goal is set.
+V21 closed the autonomous studio loop (orchestrator, war room, quality axes, knowledge Q&A). V23 makes the *output* a real, playable, publishable artifact and opens a community surface around it. This plan is scoped to what's realistically buildable in-browser on the current TanStack + Cloud stack — no native engines, no real multiplayer netcode beyond presence/lobby.
 
-## Outcomes
-- User submits a goal; studio plans, generates, critiques, revises, and approves without manual prompts.
-- Every artifact has a multi-axis score; weak scores trigger revisions automatically.
-- A live War Room shows agent conversations and handoffs in real time.
-- Project Knowledge Base is searchable in natural language.
+## Scope guardrails (read first)
 
-## Phases
+In:
+- A single **browser runtime** that boots any generated game from a JSON `game_manifest` (2D-first; 3D = Three.js scenes with limited templates).
+- **Playability gate**: orchestrator cannot mark a project shippable until the runtime validates the manifest end-to-end.
+- **AI playtest loop**: headless simulation of the manifest produces bug/softlock/balance reports that feed back into the existing revision cycle.
+- **Publish → Community Hub** (Discover, profiles, likes, comments, ratings, remix).
+- **Studio dashboard** consolidating health/agents/tasks/timeline already in DB.
 
-### 1. Executive Producer 2.0 (orchestrator upgrade)
-- Refactor `studio-orchestrator.server.ts` into a state machine: `plan → assign → generate → review → revise → approve`.
-- Producer emits structured `tasks` (assignee, deliverable, acceptance criteria) and tracks them in a new `studio_tasks` table.
-- Producer-authored user-facing status updates posted to the project timeline.
+Out (explicitly):
+- Real-time multiplayer netcode, voice, matchmaking. We ship "multiplayer-ready" lobbies + presence only; gameplay sync is a future phase.
+- Native exports (Unity/Unreal/mobile).
+- User-uploaded binary assets at scale (we generate sprites/textures via existing imagegen; no upload pipeline yet).
+- Anti-cheat, moderation queues beyond a simple report flag.
 
-### 2. Autonomous improvement loops
-- New `runReviewCycle` server fn: after any artifact is produced, fan out to reviewer agents (QA, Balance, Creative Director) using AI SDK tool calls with `stopWhen: stepCountIs(50)`.
-- If aggregate quality < threshold (default 80), Producer auto-spawns a revision task. Max 3 cycles per artifact, then escalate to user.
+## Phase A — Universal Game Runtime (`src/runtime/`)
 
-### 3. Quality Score Engine
-- Extend `quality_reviews` with axes: creativity, gameplay, replayability, clarity, balance, feasibility, enjoyment (0–100 each).
-- Add `computeProjectQuality` aggregator → writes to `project_intelligence.quality_breakdown` JSONB.
-- New Quality tab visual: radar chart + per-artifact scorecards.
+A new `src/runtime/` package with a single entry `<GameRuntime manifest={...} />`.
 
-### 4. Project Health dashboard
-- Extend `project_intelligence` with: completion_pct, risk_items[], missing_features[], tech_debt_notes[], test_coverage_pct.
-- Overview tab gets a Health card with Recommended Actions buttons that enqueue tasks.
+**Manifest schema** (`src/runtime/manifest.ts`, Zod):
+```
+GameManifest {
+  id, title, kind: '2d' | '3d',
+  template: 'platformer'|'topdown'|'puzzle'|'td'|'roguelike'|'fps'|'thirdperson'|'racing',
+  world: { tiles?, scenes[], spawn },
+  entities: [{ id, kind:'player'|'npc'|'enemy'|'item'|'prop', sprite|model, stats, ai? }],
+  controls: { scheme: 'wasd'|'arrows'|'touch'|'pointer', actions },
+  rules: { win[], lose[], scoring },
+  ui: { hud[], menus[] },
+  save: { slots, fields[] },
+  audio?: { bgm?, sfx[] }
+}
+```
 
-### 5. Studio War Room (realtime)
-- Add `agent_messages` table (project_id, from_agent, to_agent, kind: critique|approval|revision|decision, body, created_at).
-- Enable Supabase realtime on `agent_messages`, `agent_handoffs`, `project_events`.
-- War Room tab subscribes and renders a chat-style transcript with agent avatars.
+**2D engine**: thin canvas/PixiJS-style loop we write ourselves (no new heavy dep) — tilemap renderer, sprite entities, AABB collision, input map, simple FSM AI. ~600 LoC across `runtime/2d/{loop,render,physics,input,ai}.ts`.
 
-### 6. Playable Prototype Pipeline
-- Producer emits a `build_manifest` artifact with sections: Gameplay Preview, Core Loop, World Overview, NPC Showcase, Quest Showcase, Systems Overview.
-- New Prototype tab renders the manifest as navigable cards with copy/export.
+**3D engine**: `three` (already viable on Worker SSR-skipped client route) with a handful of template scenes (FPS controller, third-person orbit, racing track-on-rails). Lazy-loaded only when `kind==='3d'`.
 
-### 7. Memory Evolution
-- New `user_preferences` table (favorite_genres, design_patterns, tone). Producer reads it at plan time.
-- After project completion, post-mortem agent writes lessons into `project_memory` with `category='lesson'`.
+**Shared**: save/load to `localStorage` keyed by `project_id`, pause/resume, win/lose overlay, settings menu, FPS counter.
 
-### 8. Knowledge Base
-- New Knowledge tab: full-text search (Postgres `tsvector`) across `project_artifacts.content`, `project_memory.body`, `agent_messages.body`.
-- Natural-language Q&A: `askProject` server fn embeds query, ranks artifacts, answers via Lovable AI.
+**Route**: `src/routes/play.$projectId.tsx` (public) — fetches latest approved `build_records.manifest`, mounts `<GameRuntime>`, fullscreen toggle, share button. SSR off for this route.
 
-### 9. Community Intelligence
-- Showcase page: list public projects, "Remix" button clones project + intelligence + key artifacts under new owner.
-- Templates registry seeded from highest-quality public projects.
+## Phase B — Playability Gate (orchestrator)
 
-### 10. Production readiness pass
-- Audit every route; fix broken links, empty states, loading skeletons, mobile breakpoints.
-- Add error boundaries to every `_authenticated` route.
+Extend `studio-orchestrator.server.ts`:
+- New tool `buildPlayableManifest` the Game Builder agent must call; output validated against the Zod manifest schema.
+- New `playabilityCheck` step (server-side, no DOM): runs the manifest through a **headless validator** in `src/runtime/headless.ts` — verifies spawn reachable, win condition satisfiable, no orphan entities, controls bound, save fields serializable.
+- Result written to `build_records` with `playable: boolean`, `issues: jsonb`.
+- If `playable=false` OR any check fails → auto-spawn revision task (reuses existing 3-cycle loop). Project status cannot advance to `shippable` without `playable=true`.
 
-### 11. Premium visual polish
-- Restrict palette to pure black/white/soft gray; remove residual accent colors except for status semantics (green/amber/red).
-- Tighten type scale, increase whitespace, Linear-style command palette (`⌘K`).
+## Phase C — AI Playtest Automation
 
-## Technical details
+`src/lib/playtest.server.ts` — given a manifest, runs N simulated sessions:
+- Random-policy + goal-directed agents step the headless engine for up to K ticks.
+- Records: reached_win, softlock_detected (no state change for T ticks), avg_session_len, deaths, dps balance, perf (ticks/sec).
+- Aggregated into a `playtest_reports` row; below-threshold scores create `studio_tasks` with `kind='balance_fix'` or `'softlock_fix'` routed to Gameplay Engineer.
 
-**New tables**
-- `studio_tasks(id, project_id, assignee_agent, title, deliverable, acceptance_criteria, status, parent_artifact_id, created_at, updated_at)`
-- `agent_messages(id, project_id, from_agent, to_agent, kind, body, created_at)`
-- `user_preferences(user_id PK, favorite_genres[], design_patterns jsonb, tone, updated_at)`
-- All with GRANTs + RLS scoped to project owner.
+New table `playtest_reports` (project_id, build_id, sessions, win_rate, softlock_rate, avg_len_ticks, perf_tps, issues jsonb, created_at) with standard RLS/GRANTs.
 
-**Realtime**
-- `ALTER PUBLICATION supabase_realtime ADD TABLE agent_messages, agent_handoffs, project_events, studio_tasks;`
+## Phase D — Community Hub
 
-**Orchestrator**
-- Single durable run loop in `studio-orchestrator.server.ts` using AI SDK `streamText` + tools (`assignTask`, `submitArtifact`, `reviewArtifact`, `requestRevision`, `approveArtifact`, `postMessage`).
-- Persisted to `studio_runs.state` so runs are resumable.
+**New tables** (all with GRANTs + RLS):
+- `published_games` (project_id PK, slug unique, title, summary, cover_url, kind, template, manifest jsonb, creator_id, plays bigint, likes bigint, rating_avg, rating_count, published_at, status: 'public'|'unlisted'|'taken_down')
+- `game_likes` (user_id, game_id, created_at) — unique pair
+- `game_favorites` (user_id, game_id, created_at)
+- `game_ratings` (user_id, game_id, gameplay, fun, creativity, performance, visuals, overall) — unique pair
+- `game_comments` (id, game_id, user_id, body, created_at, parent_id nullable)
+- `game_plays` (id, game_id, user_id nullable, started_at, duration_s, completed bool) — for "Most Played"
+- `creator_follows` (follower_id, creator_id) — unique pair
+- `game_remixes` (original_id, remix_project_id, user_id, created_at)
+- `game_reports` (id, game_id, reporter_id, reason, created_at) — moderation flag
 
-**Search**
-- Generated `tsvector` columns + GIN indexes on artifact/memory/message bodies.
+**Routes**:
+- `/discover` — tabs: Trending / New / Featured / Most Played / Top Rated / Staff Picks / Multiplayer / 2D / 3D / Updated. Server fn `listDiscover({ tab, page })` with SQL-ranked queries (trending = likes/age decay).
+- `/g/$slug` — game detail: cover, play button, ratings, comments, remix, report.
+- `/u/$handle` — creator profile (games, followers, plays, likes).
+- `/play/$projectId` — runtime (above).
 
-## Out of scope (defer)
-- Multiplayer real-time collab between human users.
-- Engine export (Unity/Unreal codegen).
-- Billing/usage metering changes.
+**Publish flow**: from project detail, "Publish" button → server fn `publishGame` requires `playable=true` + `quality>=80` + user confirmation → inserts `published_games` row, generates slug, marks project public.
 
-## Risks
-- AI cost: review loops 3-5x generation cost. Mitigate with per-project run cap + threshold tuning.
-- Latency: long autonomous runs need streaming progress; rely on existing `project_events` feed.
+**Remix**: `remixGame` server fn clones `projects` row + latest approved artifacts + manifest into new project owned by current user, links via `game_remixes`.
 
-Approve to proceed and I'll implement in this order: 1 → 3 → 2 → 5 → 4 → 6 → 7 → 8 → 11 → 10 → 9.
+## Phase E — Studio Dashboard
+
+New tab on `/app/projects/$projectId` (extends existing page): **Dashboard** card showing
+- Project Health (from `project_intelligence.health`)
+- Build Health (latest `build_records.playable` + issue count)
+- QA Health (latest `playtest_reports` win/softlock rates)
+- Agent Status (active `studio_tasks` grouped by agent)
+- Timeline (last 20 `project_events`)
+- Recommendations (top 3 from intelligence)
+- Version History (`build_records` list with "play this version")
+
+Reuses existing realtime channels; no new subscriptions.
+
+## Phase F — Live Studio Polish
+
+The War Room transcript already exists. Add per-agent **status pills** in a sticky header driven by `agent_handoffs` latest-per-agent: `Executive Producer: creating brief…`, etc. Pure presentational; no schema change.
+
+## Implementation order
+
+1. Manifest schema + headless validator (Phase A foundations + B gate). No UI yet.
+2. 2D runtime + `/play/$projectId` route. Test with a hand-written manifest.
+3. Orchestrator wiring: Game Builder emits manifest; playability gate blocks shipping.
+4. Playtest harness + `playtest_reports` + revision task creation.
+5. Community schema migration (one migration, all tables + GRANTs + RLS + realtime publication where needed).
+6. `/discover`, `/g/$slug`, publish flow, likes/ratings/comments.
+7. Remix + creator profiles + follows.
+8. Studio Dashboard tab + status pills.
+9. 3D template runtimes (lazy `three`).
+10. End-to-end pass: generate → playtest → publish → discover → remix.
+
+## Technical notes
+
+- All new server logic uses `createServerFn` + `requireSupabaseAuth` (except public reads on Discover, which use admin-elevated public fns with safe-column projection).
+- Realtime added for `game_comments`, `playtest_reports`, `build_records`.
+- `three` and any heavy 3D code is dynamically imported inside the 3D runtime module so 2D-only sessions don't pay the cost.
+- No service-role key ever touched in client-reachable code; `client.server` imported only inside handler bodies.
+- All new public-schema tables follow the CREATE → GRANT → RLS → POLICY order.
+
+## Out of scope (called out so we don't silently expand)
+
+Real multiplayer netcode, native exports, asset upload pipeline, payments/monetization, moderation review queue UI, full localization. Multiplayer surfaces in this phase are lobby/presence-only stubs labeled "coming soon" on the game card.
+
+## Risk
+
+The biggest risk is the runtime being too thin to make generated games actually fun. Mitigation: ship platformer + top-down + puzzle templates first (highest hit-rate from LLM-authored manifests); 3D templates land last and stay narrow (FPS arena, racing rails, third-person sandbox).

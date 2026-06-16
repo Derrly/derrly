@@ -98,16 +98,20 @@ function ProjectPage() {
                 {project.data?.title ?? "Project"}
               </h1>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1 text-xs text-muted-foreground">
-              <span
-                className={`size-1.5 rounded-full ${workspace.data?.run?.status === "running" ? "animate-pulse bg-foreground" : "bg-muted-foreground"}`}
-              />
-              {workspace.data?.run?.status === "running"
-                ? "Studio working"
-                : (project.data?.status ?? "Ready")}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1 text-xs text-muted-foreground">
+                <span
+                  className={`size-1.5 rounded-full ${workspace.data?.run?.status === "running" ? "animate-pulse bg-foreground" : "bg-muted-foreground"}`}
+                />
+                {workspace.data?.run?.status === "running"
+                  ? "Studio working"
+                  : (project.data?.status ?? "Ready")}
+              </span>
+              <PlayPublishBar projectId={projectId} projectTitle={project.data?.title ?? "Untitled"} />
+            </div>
           </div>
         </header>
+
         {workspace.data?.threadId && existing.isSuccess ? (
           <ChatWindow
             key={workspace.data.threadId}
@@ -571,3 +575,49 @@ function ChatWindow({
     </>
   );
 }
+
+function PlayPublishBar({ projectId, projectTitle }: { projectId: string; projectTitle: string }) {
+  const [busy, setBusy] = useState<null | "check" | "playtest" | "publish">(null);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [slug, setSlug] = useState<string | null>(null);
+  const runCheck = useServerFn((async (...args: any[]) => (await import("@/lib/community.functions")).runPlayabilityCheck(...args)) as any);
+  const runPlaytest = useServerFn((async (...args: any[]) => (await import("@/lib/community.functions")).runPlaytest(...args)) as any);
+  const publish = useServerFn((async (...args: any[]) => (await import("@/lib/community.functions")).publishGame(...args)) as any);
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Link to="/play/$projectId" params={{ projectId }} className="rounded-full border hairline px-3 py-1 text-xs hover:bg-muted/40">▶ Play</Link>
+      <button
+        disabled={!!busy}
+        onClick={async () => {
+          setBusy("check"); setMsg(null);
+          try { const r: any = await runCheck({ data: { projectId } }); setMsg(r.ok ? "Playable ✓" : `Issues: ${r.issues?.length ?? 0}`); }
+          catch (e: any) { setMsg(e.message); } finally { setBusy(null); }
+        }}
+        className="rounded-full border hairline px-3 py-1 text-xs hover:bg-muted/40 disabled:opacity-50"
+      >{busy === "check" ? "Checking…" : "QA Check"}</button>
+      <button
+        disabled={!!busy}
+        onClick={async () => {
+          setBusy("playtest"); setMsg(null);
+          try { const r: any = await runPlaytest({ data: { projectId, sessions: 10 } }); setMsg(`Playtest: win ${r.win_rate}% · softlock ${r.softlock_rate}%`); }
+          catch (e: any) { setMsg(e.message); } finally { setBusy(null); }
+        }}
+        className="rounded-full border hairline px-3 py-1 text-xs hover:bg-muted/40 disabled:opacity-50"
+      >{busy === "playtest" ? "Simulating…" : "Playtest"}</button>
+      <button
+        disabled={!!busy}
+        onClick={async () => {
+          setBusy("publish"); setMsg(null);
+          try {
+            const r: any = await publish({ data: { projectId, title: projectTitle, summary: "" } });
+            setSlug(r.slug); setMsg("Published");
+          } catch (e: any) { setMsg(e.message); } finally { setBusy(null); }
+        }}
+        className="rounded-full bg-foreground px-3 py-1 text-xs text-background disabled:opacity-50"
+      >{busy === "publish" ? "Publishing…" : "Publish"}</button>
+      {slug && <Link to="/g/$slug" params={{ slug }} className="text-xs underline">View public page</Link>}
+      {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
+    </div>
+  );
+}
+
