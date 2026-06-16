@@ -388,3 +388,80 @@ export const getCreatorProfile = createServerFn({ method: "GET" })
     if (!profile) return null;
     return { profile, games: games ?? [], followers: followers ?? 0 };
   });
+
+// List creators ranked by total plays/likes across their published games.
+export const listCreators = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) =>
+    z.object({ limit: z.number().int().min(1).max(60).default(30) }).parse(input ?? {}),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: games } = await supabaseAdmin
+      .from("published_games")
+      .select("creator_id, plays, likes, rating_avg, rating_count, id")
+      .eq("status", "public");
+    const agg = new Map<string, { plays: number; likes: number; games: number; ratingSum: number; ratingN: number }>();
+    for (const g of games ?? []) {
+      const a = agg.get(g.creator_id) ?? { plays: 0, likes: 0, games: 0, ratingSum: 0, ratingN: 0 };
+      a.plays += g.plays ?? 0;
+      a.likes += g.likes ?? 0;
+      a.games += 1;
+      a.ratingSum += (g.rating_avg ?? 0) * (g.rating_count ?? 0);
+      a.ratingN += g.rating_count ?? 0;
+      agg.set(g.creator_id, a);
+    }
+    const ids = Array.from(agg.keys());
+    if (ids.length === 0) return [];
+    const [{ data: profiles }, { data: follows }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, display_name, studio_name, avatar_url").in("id", ids),
+      supabaseAdmin.from("creator_follows").select("creator_id").in("creator_id", ids),
+    ]);
+    const followerCount = new Map<string, number>();
+    for (const f of follows ?? []) followerCount.set(f.creator_id, (followerCount.get(f.creator_id) ?? 0) + 1);
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+    const rows = ids.map((id) => {
+      const a = agg.get(id)!;
+      const p = profileMap.get(id);
+      return {
+        id,
+        display_name: p?.display_name ?? null,
+        studio_name: p?.studio_name ?? null,
+        avatar_url: p?.avatar_url ?? null,
+        games: a.games,
+        plays: a.plays,
+        likes: a.likes,
+        rating_avg: a.ratingN ? Number((a.ratingSum / a.ratingN).toFixed(2)) : 0,
+        followers: followerCount.get(id) ?? 0,
+      };
+    });
+    rows.sort((x, y) => y.plays + y.likes * 2 - (x.plays + x.likes * 2));
+    return rows.slice(0, data.limit);
+  });
+
+// List recent project history (build records + handoffs + reviews) for any project the user owns.
+export const listProjectHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ projectId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const [{ data: builds }, { data: handoffs }, { data: reviews }, { data: events }] = await Promise.all([
+      context.supabase.from("build_records").select("id, version, status, playable, created_at").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
+      context.supabase.from("agent_handoffs").select("id, from_agent, to_agent, reason, created_at").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
+      context.supabase.from("quality_reviews").select("id, overall_score, created_at, reviewer").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
+      context.supabase.from("project_events").select("id, kind, summary, created_at").eq("project_id", data.projectId).order("created_at", { ascending: false }).limit(50),
+    ]);
+    return { builds: builds ?? [], handoffs: handoffs ?? [], reviews: reviews ?? [], events: events ?? [] };
+  });
+
+// List all projects (lightweight) for the signed-in user.
+export const listMyProjects = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("projects")
+      .select("id, title, status, created_at, updated_at")
+      .eq("owner_id", context.userId)
+      .order("updated_at", { ascending: false })
+      .limit(50);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
