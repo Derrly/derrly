@@ -98,16 +98,20 @@ function ProjectPage() {
                 {project.data?.title ?? "Project"}
               </h1>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1 text-xs text-muted-foreground">
-              <span
-                className={`size-1.5 rounded-full ${workspace.data?.run?.status === "running" ? "animate-pulse bg-foreground" : "bg-muted-foreground"}`}
-              />
-              {workspace.data?.run?.status === "running"
-                ? "Studio working"
-                : (project.data?.status ?? "Ready")}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border hairline px-3 py-1 text-xs text-muted-foreground">
+                <span
+                  className={`size-1.5 rounded-full ${workspace.data?.run?.status === "running" ? "animate-pulse bg-foreground" : "bg-muted-foreground"}`}
+                />
+                {workspace.data?.run?.status === "running"
+                  ? "Studio working"
+                  : (project.data?.status ?? "Ready")}
+              </span>
+              <PlayPublishBar projectId={projectId} projectTitle={project.data?.title ?? "Untitled"} />
+            </div>
           </div>
         </header>
+
         {workspace.data?.threadId && existing.isSuccess ? (
           <ChatWindow
             key={workspace.data.threadId}
