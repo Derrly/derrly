@@ -255,12 +255,14 @@ export type Database = {
           logs: Json
           manifest: Json
           owner_id: string
+          playable: boolean
           preview_url: string | null
           project_id: string
           quest_overview: string
           run_id: string | null
           status: string
           updated_at: string
+          validation_issues: Json
           version: number
           world_overview: string
         }
@@ -272,12 +274,14 @@ export type Database = {
           logs?: Json
           manifest?: Json
           owner_id: string
+          playable?: boolean
           preview_url?: string | null
           project_id: string
           quest_overview?: string
           run_id?: string | null
           status?: string
           updated_at?: string
+          validation_issues?: Json
           version?: number
           world_overview?: string
         }
@@ -289,12 +293,14 @@ export type Database = {
           logs?: Json
           manifest?: Json
           owner_id?: string
+          playable?: boolean
           preview_url?: string | null
           project_id?: string
           quest_overview?: string
           run_id?: string | null
           status?: string
           updated_at?: string
+          validation_issues?: Json
           version?: number
           world_overview?: string
         }
@@ -311,6 +317,271 @@ export type Database = {
             columns: ["run_id"]
             isOneToOne: false
             referencedRelation: "studio_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_follows: {
+        Row: {
+          created_at: string
+          creator_id: string
+          follower_id: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          follower_id: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          follower_id?: string
+        }
+        Relationships: []
+      }
+      game_comments: {
+        Row: {
+          body: string
+          created_at: string
+          game_id: string
+          id: string
+          parent_id: string | null
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          game_id: string
+          id?: string
+          parent_id?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          parent_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_comments_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "published_games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "game_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_favorites: {
+        Row: {
+          created_at: string
+          game_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_favorites_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "published_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_likes: {
+        Row: {
+          created_at: string
+          game_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_likes_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "published_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_plays: {
+        Row: {
+          completed: boolean
+          duration_s: number
+          game_id: string
+          id: string
+          started_at: string
+          user_id: string | null
+        }
+        Insert: {
+          completed?: boolean
+          duration_s?: number
+          game_id: string
+          id?: string
+          started_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed?: boolean
+          duration_s?: number
+          game_id?: string
+          id?: string
+          started_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_plays_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "published_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_ratings: {
+        Row: {
+          created_at: string
+          creativity: number
+          fun: number
+          game_id: string
+          gameplay: number
+          overall: number
+          performance: number
+          updated_at: string
+          user_id: string
+          visuals: number
+        }
+        Insert: {
+          created_at?: string
+          creativity: number
+          fun: number
+          game_id: string
+          gameplay: number
+          overall: number
+          performance: number
+          updated_at?: string
+          user_id: string
+          visuals: number
+        }
+        Update: {
+          created_at?: string
+          creativity?: number
+          fun?: number
+          game_id?: string
+          gameplay?: number
+          overall?: number
+          performance?: number
+          updated_at?: string
+          user_id?: string
+          visuals?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_ratings_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "published_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_remixes: {
+        Row: {
+          created_at: string
+          id: string
+          original_game_id: string
+          remix_project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          original_game_id: string
+          remix_project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          original_game_id?: string
+          remix_project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_remixes_original_game_id_fkey"
+            columns: ["original_game_id"]
+            isOneToOne: false
+            referencedRelation: "published_games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_remixes_remix_project_id_fkey"
+            columns: ["remix_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_reports: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          reason: string
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          reason: string
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_reports_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "published_games"
             referencedColumns: ["id"]
           },
         ]
@@ -355,6 +626,63 @@ export type Database = {
             columns: ["thread_id"]
             isOneToOne: false
             referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      playtest_reports: {
+        Row: {
+          avg_len_ticks: number
+          build_id: string | null
+          created_at: string
+          id: string
+          issues: Json
+          owner_id: string
+          perf_tps: number
+          project_id: string
+          sessions: number
+          softlock_rate: number
+          win_rate: number
+        }
+        Insert: {
+          avg_len_ticks?: number
+          build_id?: string | null
+          created_at?: string
+          id?: string
+          issues?: Json
+          owner_id: string
+          perf_tps?: number
+          project_id: string
+          sessions?: number
+          softlock_rate?: number
+          win_rate?: number
+        }
+        Update: {
+          avg_len_ticks?: number
+          build_id?: string | null
+          created_at?: string
+          id?: string
+          issues?: Json
+          owner_id?: string
+          perf_tps?: number
+          project_id?: string
+          sessions?: number
+          softlock_rate?: number
+          win_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playtest_reports_build_id_fkey"
+            columns: ["build_id"]
+            isOneToOne: false
+            referencedRelation: "build_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playtest_reports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -663,6 +991,90 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      published_games: {
+        Row: {
+          build_id: string | null
+          cover_url: string | null
+          creator_id: string
+          featured: boolean
+          id: string
+          kind: string
+          likes: number
+          manifest: Json
+          plays: number
+          project_id: string
+          published_at: string
+          rating_avg: number
+          rating_count: number
+          slug: string
+          staff_pick: boolean
+          status: string
+          summary: string
+          template: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          build_id?: string | null
+          cover_url?: string | null
+          creator_id: string
+          featured?: boolean
+          id?: string
+          kind?: string
+          likes?: number
+          manifest: Json
+          plays?: number
+          project_id: string
+          published_at?: string
+          rating_avg?: number
+          rating_count?: number
+          slug: string
+          staff_pick?: boolean
+          status?: string
+          summary?: string
+          template?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          build_id?: string | null
+          cover_url?: string | null
+          creator_id?: string
+          featured?: boolean
+          id?: string
+          kind?: string
+          likes?: number
+          manifest?: Json
+          plays?: number
+          project_id?: string
+          published_at?: string
+          rating_avg?: number
+          rating_count?: number
+          slug?: string
+          staff_pick?: boolean
+          status?: string
+          summary?: string
+          template?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "published_games_build_id_fkey"
+            columns: ["build_id"]
+            isOneToOne: false
+            referencedRelation: "build_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "published_games_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quality_reviews: {
         Row: {
