@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrustRouteImport } from './routes/trust'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ShowcaseRouteImport } from './routes/showcase'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
@@ -32,6 +33,11 @@ import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAppHistoryRouteImport } from './routes/_authenticated/app.history'
 import { Route as AuthenticatedAppProjectsProjectIdRouteImport } from './routes/_authenticated/app.projects.$projectId'
 
+const TrustRoute = TrustRouteImport.update({
+  id: '/trust',
+  path: '/trust',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/roadmap': typeof RoadmapRoute
   '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trust': typeof TrustRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/g/$slug': typeof GSlugRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/roadmap': typeof RoadmapRoute
   '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trust': typeof TrustRoute
   '/api/chat': typeof ApiChatRoute
   '/g/$slug': typeof GSlugRoute
   '/play/$projectId': typeof PlayProjectIdRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/roadmap': typeof RoadmapRoute
   '/showcase': typeof ShowcaseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trust': typeof TrustRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/g/$slug': typeof GSlugRoute
@@ -228,6 +237,7 @@ export interface FileRouteTypes {
     | '/roadmap'
     | '/showcase'
     | '/sitemap.xml'
+    | '/trust'
     | '/app'
     | '/api/chat'
     | '/g/$slug'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/roadmap'
     | '/showcase'
     | '/sitemap.xml'
+    | '/trust'
     | '/api/chat'
     | '/g/$slug'
     | '/play/$projectId'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/roadmap'
     | '/showcase'
     | '/sitemap.xml'
+    | '/trust'
     | '/_authenticated/app'
     | '/api/chat'
     | '/g/$slug'
@@ -299,6 +311,7 @@ export interface RootRouteChildren {
   RoadmapRoute: typeof RoadmapRoute
   ShowcaseRoute: typeof ShowcaseRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TrustRoute: typeof TrustRoute
   ApiChatRoute: typeof ApiChatRoute
   GSlugRoute: typeof GSlugRoute
   PlayProjectIdRoute: typeof PlayProjectIdRoute
@@ -307,6 +320,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trust': {
+      id: '/trust'
+      path: '/trust'
+      fullPath: '/trust'
+      preLoaderRoute: typeof TrustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -507,6 +527,7 @@ const rootRouteChildren: RootRouteChildren = {
   RoadmapRoute: RoadmapRoute,
   ShowcaseRoute: ShowcaseRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TrustRoute: TrustRoute,
   ApiChatRoute: ApiChatRoute,
   GSlugRoute: GSlugRoute,
   PlayProjectIdRoute: PlayProjectIdRoute,
@@ -515,13 +536,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
