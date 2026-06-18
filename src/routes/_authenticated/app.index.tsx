@@ -97,15 +97,15 @@ function Dashboard() {
           htmlFor="project-pitch"
           className="mt-6 block text-xs font-medium uppercase tracking-widest text-muted-foreground"
         >
-          One-sentence pitch
+          Project prompt
         </label>
         <textarea
           id="project-pitch"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          rows={3}
-          placeholder="A multiplayer zombie survival game set in a flooded Tokyo, with a weather system that affects horde behavior."
-          className="mt-2 w-full resize-none bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground/60"
+          rows={6}
+          placeholder="Describe your game in plain text — premise, vibe, mechanics, anything that helps the studio understand what to build."
+          className="mt-2 w-full resize-y bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground/60 whitespace-pre-wrap"
         />
         {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
         <div className="mt-4 flex justify-end">
